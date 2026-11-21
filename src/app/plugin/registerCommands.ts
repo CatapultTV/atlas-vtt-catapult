@@ -167,11 +167,11 @@ function registerMapCommands(plugin: Plugin, deps: CommandDependencies): void {
         showNotice('Open an Atlas map before opening the Initiative Display.');
         return;
       }
-      const mainDocument = app.workspace.containerEl.ownerDocument;
-      // Reuse only an Initiative Display that is already in a separate window. If one exists
-      // in the main workspace, leave it untouched and open the display in a dedicated popout.
+      const mainContainer = app.workspace.rootSplit;
+      // getContainer() distinguishes Obsidian's WorkspaceWindow popouts from the main WorkspaceRoot.
+      // Never reuse an Initiative Display tab that lives in the main workspace.
       const popoutLeaf = app.workspace.getLeavesOfType(INITIATIVE_DISPLAY_VIEW_TYPE)
-        .find((candidate) => candidate.view.containerEl.ownerDocument !== mainDocument);
+        .find((candidate) => candidate.getContainer() !== mainContainer);
       const leaf = popoutLeaf ?? app.workspace.openPopoutLeaf();
       void leaf.setViewState({ type: INITIATIVE_DISPLAY_VIEW_TYPE, state: { sourceViewId: source.viewId, sourceFilePath: source.atlasStore.getState().mapPath ?? '' } });
     },

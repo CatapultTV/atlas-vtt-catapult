@@ -71,13 +71,14 @@ export class InitiativeDisplayView extends ItemView {
   async onOpen(): Promise<void> {
     this.contentEl.addClass('atlas-initiative-display-content');
 
-    // Identify this view's actual document. Only that document receives the popout styling.
-    const mainDocument = this.app.workspace.containerEl.ownerDocument;
-    const viewDocument = this.contentEl.ownerDocument;
-    this.initiativeWindowDocument = viewDocument !== mainDocument ? viewDocument : null;
+    // Obsidian exposes the actual root container for this leaf. A popout uses a
+    // WorkspaceWindow; the main workspace uses workspace.rootSplit (WorkspaceRoot).
+    const mainContainer = this.app.workspace.rootSplit;
+    const viewContainer = this.leaf.getContainer();
+    this.initiativeWindowDocument = viewContainer !== mainContainer ? viewContainer.doc : null;
 
     if (this.initiativeWindowDocument) {
-      this.copyMainWindowStyles(mainDocument, this.initiativeWindowDocument);
+      this.copyMainWindowStyles(mainContainer.doc, this.initiativeWindowDocument);
       this.initiativeWindowDocument.body.classList.add('atlas-initiative-display-window');
     }
     this.contentEl.setText('Connecting to the Atlas map…');
