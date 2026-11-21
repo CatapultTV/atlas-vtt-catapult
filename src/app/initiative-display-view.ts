@@ -21,6 +21,7 @@ export const INITIATIVE_DISPLAY_VIEW_TYPE = 'atlas-vtt-initiative-display';
 
 interface InitiativeDisplaySession {
   sourceViewId: string;
+  sourceFilePath?: string;
 }
 
 /** A combatant after applying the same visibility rules as Atlas' player-facing initiative list. */
@@ -52,7 +53,10 @@ export class InitiativeDisplayView extends ItemView {
 
   async setState(state: unknown, _result: ViewStateResult): Promise<void> {
     if (typeof state !== 'object' || state === null || !('sourceViewId' in state) || typeof state.sourceViewId !== 'string') return;
-    this.session = { sourceViewId: state.sourceViewId };
+    this.session = {
+      sourceViewId: state.sourceViewId,
+      ...(\'sourceFilePath\' in state && typeof state.sourceFilePath === \'string\' ? { sourceFilePath: state.sourceFilePath } : {}),
+    };
     this.queueReconnect();
   }
 
@@ -82,7 +86,10 @@ export class InitiativeDisplayView extends ItemView {
   private connectToSource(): void {
     const source = this.app.workspace.getLeavesOfType(ATLAS_VIEW_TYPE)
       .map((leaf) => leaf.view)
-      .find((view): view is AtlasView => view instanceof AtlasView && view.viewId === this.session.sourceViewId) ?? null;
+      .find((view): view is AtlasView => view instanceof AtlasView && (
+        view.viewId === this.session.sourceViewId
+        || (!!this.session.sourceFilePath && view.atlasStore.getState().mapPath === this.session.sourceFilePath)
+      )) ?? null;
 
     if (source === this.sourceView && this.stopStore) return;
     this.disconnect();
