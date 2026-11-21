@@ -153,6 +153,7 @@
   border: 0;
   background: transparent;
   text-align: left;
+  transform: translateX(-clamp(8px, 1.5vw, 20px));
 }
 
 .atlas-initiative-display__hp-label {
