@@ -1,6 +1,6 @@
 import { TokenCreatorModal } from '../packages/components/asset-manager/token-creator/TokenCreatorModal';
 import { Plugin, TFile } from 'obsidian';
-import { AtlasView } from '../atlas-view';
+import { AtlasView, ATLAS_VIEW_TYPE } from '../atlas-view';
 import { INITIATIVE_DISPLAY_VIEW_TYPE } from '../initiative-display-view';
 import { DASHBOARD_VIEW_TYPE } from '../dashboard-view';
 import { showDungeonGenerator } from '../packages/components/dungeon-generator/openDungeonGenerator';
@@ -162,7 +162,7 @@ function registerMapCommands(plugin: Plugin, deps: CommandDependencies): void {
     name: 'Open Initiative Display',
     callback: () => {
       const source = app.workspace.getActiveViewOfType(AtlasView)
-        ?? app.workspace.getLeavesOfType('atlas-vtt').map((leaf) => leaf.view).find((view): view is AtlasView => view instanceof AtlasView);
+        ?? app.workspace.getLeavesOfType(ATLAS_VIEW_TYPE).map((leaf) => leaf.view).find((view): view is AtlasView => view instanceof AtlasView);
       if (!source) {
         showNotice('Open an Atlas map before opening the Initiative Display.');
         return;
