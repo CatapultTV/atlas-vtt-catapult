@@ -28,26 +28,30 @@ jobs:
       - name: Build plugin
         run: npm run build
 
-      - name: Prepare Obsidian test files
+      - name: Prepare Obsidian plugin files
         run: |
           mkdir -p release
           cp dist/main.js release/main.js
-          cp dist/styles.css release/style.css
           cp dist/styles.css release/styles.css
           cp manifest.json release/manifest.json
-          cd release
-          zip -r ../atlas-vtt-initiative-window.zip main.js style.css styles.css manifest.json
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: initiative-window-build-${{ github.run_number }}
-          name: Initiative Window build ${{ github.run_number }}
+          name: Initiative Display test build ${{ github.run_number }}
+          body: |
+            Test build of Atlas VTT with the Initiative Display.
+
+            Install by replacing the existing Atlas VTT plugin files with the three assets below:
+            - main.js
+            - styles.css
+            - manifest.json
+
+            No ZIP or alternate stylesheet is required.
           prerelease: true
-          generate_release_notes: true
+          generate_release_notes: false
           files: |
-            atlas-vtt-initiative-window.zip
             release/main.js
-            release/style.css
             release/styles.css
             release/manifest.json
