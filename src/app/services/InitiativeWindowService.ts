@@ -15,8 +15,12 @@ export class InitiativeWindowService {
   setup(view: ItemView): void {
     const targetWindow = view.contentEl.win;
 
-    // This is the same reliable check used by LocalPlayerView. Never touch the main window.
-    if (targetWindow === window) return;
+    // If the view has returned to the main window, remove any previous popout styling.
+    // Never apply initiative-window chrome rules to the main Obsidian window.
+    if (targetWindow === window) {
+      this.cleanup();
+      return;
+    }
 
     const targetDocument = view.contentEl.doc;
     if (targetWindow.closed || !targetDocument.body || !targetDocument.head) return;
