@@ -280,7 +280,9 @@ export class InitiativeDisplayView extends ItemView {
     // Distribute the existing badge slots evenly around the full token circumference.
     // Keep the same radius and badge sizing; only change the angular positions.
     shown.forEach((condition, index) => {
-      const angle = -Math.PI / 2 + index * (Math.PI * 2 / shown.length);
+      const angle = shown.length === 2
+        ? (index === 0 ? -Math.PI / 4 : -3 * Math.PI / 4)
+        : -Math.PI / 2 + index * (Math.PI * 2 / shown.length);
       const isOverflow = condition.id === 'overflow';
       const badge = badgeLayer.createDiv({
         cls: isOverflow
