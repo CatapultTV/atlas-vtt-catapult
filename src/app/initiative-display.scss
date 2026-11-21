@@ -264,7 +264,7 @@
 }
 
 .atlas-initiative-display__condition-glyph {
-  color: #fff;
+  color: var(--atlas-condition-glyph-color, #fff);
   font-size: 0.9em;
   font-weight: 800;
   line-height: 1;
