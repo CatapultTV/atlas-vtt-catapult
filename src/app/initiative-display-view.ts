@@ -274,9 +274,9 @@ export class InitiativeDisplayView extends ItemView {
       cls: 'atlas-initiative-display__condition-ring',
       attr: { role: 'group', 'aria-label': `Active conditions: ${conditions.map(({ name }) => name).join(', ')}` },
     });
-    const shown = conditions.length <= 6
+    const shown = conditions.length <= 11
       ? conditions
-      : [...conditions.slice(0, 5), { id: 'overflow', name: `+${conditions.length - 5}`, color: 0x4a4a54, glyph: { kind: 'text' as const, text: `+${conditions.length - 5}` } }];
+      : [...conditions.slice(0, 11), { id: 'overflow', name: `+${conditions.length - 11}`, color: 0x4a4a54, glyph: { kind: 'text' as const, text: `+${conditions.length - 11}` } }];
     // Distribute the existing badge slots evenly around the full token circumference.
     // Keep the same radius and badge sizing; only change the angular positions.
     shown.forEach((condition, index) => {
