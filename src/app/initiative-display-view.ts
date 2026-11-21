@@ -218,7 +218,7 @@ export class InitiativeDisplayView extends ItemView {
     // Condition badges sit beyond the portrait's lower edge (their orbit radius is 62%).
     // Reserve that overflow in normal document flow so it cannot collide with the name/HP row.
     if ((combatant.playerToken.conditions?.length ?? 0) >= 3) {
-      avatar.style.marginBottom = 'clamp(72px, 18vw, 100px)';
+      avatar.style.marginBottom = 'clamp(32px, 6.2vw, 80px)';
     }
 
     const name = nameShownToPlayers(entry.name, token ?? { showNameplate: false }, mapShowsNameplates, playersSeeNames);
