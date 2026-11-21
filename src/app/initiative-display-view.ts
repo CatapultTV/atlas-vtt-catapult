@@ -55,7 +55,7 @@ export class InitiativeDisplayView extends ItemView {
     if (typeof state !== 'object' || state === null || !('sourceViewId' in state) || typeof state.sourceViewId !== 'string') return;
     this.session = {
       sourceViewId: state.sourceViewId,
-      ...(\'sourceFilePath\' in state && typeof state.sourceFilePath === \'string\' ? { sourceFilePath: state.sourceFilePath } : {}),
+      ...('sourceFilePath' in state && typeof state.sourceFilePath === 'string' ? { sourceFilePath: state.sourceFilePath } : {}),
     };
     this.queueReconnect();
   }
