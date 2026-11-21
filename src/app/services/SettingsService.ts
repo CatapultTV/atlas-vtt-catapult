@@ -8,6 +8,7 @@ import { resolveLaserPointerSettings, type LaserPointerSettings } from '../tools
 import { isDiceDisplay, type DiceDisplay } from '../dice3d/diceDisplay';
 import type { ExperimentalFeatureId } from '../experimental/experimentalFeatures';
 import { DEFAULT_DICE_LOOK, isDiceColour, isDiceFont, type DiceLook } from '../dice3d/diceLook';
+import { isInitiativeDisplayFont, type InitiativeDisplayFont } from '../initiative-display-font';
 import { readToolbarLayout, type StoredToolbarLayout } from '../toolbar/toolbarLayout';
 import {
   DEFAULT_SETTINGS,
@@ -561,6 +562,17 @@ export class SettingsService {
     if (next.colour === this.settings.diceColour && next.font === this.settings.diceFont) return;
     this.settings.diceColour = next.colour;
     this.settings.diceFont = next.font;
+    this.commit();
+  }
+
+  /** Typeface for all text in the standalone Initiative Display. */
+  getInitiativeDisplayFont(): InitiativeDisplayFont {
+    return isInitiativeDisplayFont(this.settings.initiativeDisplayFont) ? this.settings.initiativeDisplayFont : 'default';
+  }
+
+  setInitiativeDisplayFont(font: InitiativeDisplayFont): void {
+    if (this.getInitiativeDisplayFont() === font) return;
+    this.settings.initiativeDisplayFont = font;
     this.commit();
   }
 

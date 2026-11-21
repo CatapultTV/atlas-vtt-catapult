@@ -12,6 +12,7 @@ import type { SharedSoundRoots } from '../soundLibrary/soundRootsStore';
 import { DEFAULT_TABLE_TV_SETTINGS, readTableTvSettings, type TableTvSettings } from './tableTvSettings';
 import { DEFAULT_FOG_EDGE, type FogEdge } from '../fog/fogEdge';
 import { DEFAULT_DRAG_DISTANCE, type DragDistance } from '../measure/dragDistance';
+import type { InitiativeDisplayFont } from '../initiative-display-font';
 
 /**
  * How wheel events drive the map viewport.
@@ -62,6 +63,8 @@ export interface AtlasSettings {
   dragDistance: DragDistance;
   /** Colour of the dice: card stock, dark or the accent colour. Read with `getDiceLook`. */
   diceColour: DiceColour;
+  /** Typeface used by every text element in the standalone Initiative Display. */
+  initiativeDisplayFont: InitiativeDisplayFont;
   /** Face of the dice numerals and roll totals. Read with `getDiceLook`. */
   diceFont: DiceFont;
   /** The GM's tracker is a compact list without portraits. Read with `showsCompactInitiative`. */
@@ -133,6 +136,7 @@ export const DEFAULT_SETTINGS: AtlasSettings = {
   dragDistance: DEFAULT_DRAG_DISTANCE,
   diceColour: DEFAULT_DICE_LOOK.colour,
   diceFont: DEFAULT_DICE_LOOK.font,
+  initiativeDisplayFont: 'default',
   initiativeDock: 'right',
   initiativeBanner: true,
   initiativeMovesOnTurn: false,

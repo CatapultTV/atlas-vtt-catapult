@@ -23,6 +23,7 @@ export const SETTINGS_PANEL_IDS = [
   'widget-settings',
   'local-player-view-settings',
   'dice-settings',
+  'initiative-display-settings',
   'experimental-features',
   'graphics-settings',
   'lighting-settings',

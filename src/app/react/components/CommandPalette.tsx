@@ -53,6 +53,7 @@ import { WidgetSettingsPanel } from './command-palette/WidgetSettingsPanel';
 import { PlayerViewSettingsPanel } from './command-palette/PlayerViewSettingsPanel';
 import { searchOptions } from './command-palette/paletteSearch';
 import { DiceSettingsPanel } from './command-palette/DiceSettingsPanel';
+import { InitiativeDisplaySettingsPanel } from './command-palette/InitiativeDisplaySettingsPanel';
 import { ExperimentalFeaturesPanel } from './command-palette/ExperimentalFeaturesPanel';
 import { GraphicsPanel } from './command-palette/GraphicsPanel';
 import { LightingSettingsPanel } from './command-palette/LightingSettingsPanel';
@@ -111,6 +112,7 @@ const SETTINGS_PANEL_META: Record<SettingsPanelId, { title: string; icon: React.
   'widget-settings': { title: t('palette.panel.widgets'), icon: <Palette /> },
   'local-player-view-settings': { title: t('palette.panel.playerView'), icon: <MonitorUp /> },
   'dice-settings': { title: t('diceSettings.title'), icon: <Dices /> },
+  'initiative-display-settings': { title: t('palette.initiativeDisplaySettings'), icon: <MonitorUp /> },
   'experimental-features': { title: t('palette.panel.experimental'), icon: <FlaskConical /> },
   'graphics-settings': { title: t('graphics.title'), icon: <Gauge /> },
   'lighting-settings': { title: t('sceneLight.settings'), icon: <SunMoon /> },
@@ -523,6 +525,23 @@ export function CommandPalette({ isOpen, onClose, toolbarRef, onCustomizeToolbar
           icon: null,
           label: t('diceSettings.display'),
           section: "dice",
+          hasSubmenu: false,
+        },
+      ],
+    },
+    {
+      id: "initiative-display-settings",
+      icon: <MonitorUp />,
+      label: t('palette.initiativeDisplaySettings'),
+      keywords: ["initiative", "combat", "display", "font", "medieval", "sci-fi"],
+      section: "settings",
+      hasSubmenu: true,
+      submenu: [
+        {
+          id: "initiative-display-all-settings",
+          icon: null,
+          label: t('palette.initiativeDisplayFont'),
+          section: "initiative-display",
           hasSubmenu: false,
         },
       ],
@@ -992,6 +1011,8 @@ export function CommandPalette({ isOpen, onClose, toolbarRef, onCustomizeToolbar
         return <PlayerViewSettingsPanel />;
       case 'dice-settings':
         return <DiceSettingsPanel />;
+      case 'initiative-display-settings':
+        return <InitiativeDisplaySettingsPanel />;
       case 'experimental-features':
         return <ExperimentalFeaturesPanel />;
       case 'graphics-settings':

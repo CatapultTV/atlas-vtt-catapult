@@ -11,6 +11,14 @@
   background: var(--background-primary);
 }
 
+.atlas-initiative-display[data-font='medieval'] {
+  font-family: 'Atlas Fantaisie Artistique', serif;
+}
+
+.atlas-initiative-display[data-font='scifi'] {
+  font-family: 'Atlas Oxanium', sans-serif;
+}
+
 .atlas-initiative-display {
   position: relative;
   display: flex;

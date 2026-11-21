@@ -2,6 +2,10 @@ import type { Message } from '../../types';
 
 export const palette = {
   'palette.panel.experimental': 'Experimental Features',
+  'palette.initiativeDisplaySettings': 'Initiative Display Settings',
+  'palette.initiativeDisplayFont': 'Text font',
+  'palette.initiativeDisplayFontHint': 'Choose the typeface used throughout the Initiative Display.',
+  'palette.initiativeDisplayFontDefault': 'Default',
   'palette.experimentalLighting': 'Dynamic lighting',
   'palette.enterAlignment': 'Enter Alignment Mode',
   'palette.enterPlayerMode': 'Enter Player Mode',

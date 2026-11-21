@@ -138,6 +138,7 @@ export class InitiativeDisplayView extends ItemView {
     container.empty();
     const initiative = state.initiative;
     const root = container.createDiv({ cls: 'atlas-initiative-display' });
+    root.dataset.font = this.sourceView?.serviceManager.getSettingsService().getInitiativeDisplayFont() ?? 'default';
 
     if (!initiative?.isActive) {
       root.createDiv({ cls: 'atlas-initiative-display__empty', text: 'No active encounter' });
