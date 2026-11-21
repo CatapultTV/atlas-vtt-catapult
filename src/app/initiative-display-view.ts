@@ -266,11 +266,15 @@ export class InitiativeDisplayView extends ItemView {
     const shown = conditions.length <= 6
       ? conditions
       : [...conditions.slice(0, 5), { id: 'overflow', name: `+${conditions.length - 5}`, color: 0x4a4a54, glyph: { kind: 'text' as const, text: `+${conditions.length - 5}` } }];
-    const middle = (shown.length - 1) / 2;
+    // Use fixed slots along the upper-left arc. The overflow badge therefore stays in
+    // the same place regardless of the selected display font or the number of conditions.
     shown.forEach((condition, index) => {
-      const angle = (-0.75 * Math.PI) + (middle - index) * (Math.PI / 2 / Math.max(1, shown.length - 1));
+      const angle = (-0.75 * Math.PI) + index * (Math.PI / 2 / 5);
+      const isOverflow = condition.id === 'overflow';
       const badge = badgeLayer.createDiv({
-        cls: 'atlas-initiative-display__condition-badge',
+        cls: isOverflow
+          ? 'atlas-initiative-display__condition-badge atlas-initiative-display__condition-badge--overflow'
+          : 'atlas-initiative-display__condition-badge',
         attr: { title: condition.name },
       });
       badge.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);

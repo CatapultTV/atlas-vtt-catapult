@@ -22,9 +22,9 @@
 /* The decorative medieval face has naturally heavier numerals; keep HP legible
    and visually balanced with the other fonts inside the pill. */
 .atlas-initiative-display[data-font='medieval'] .atlas-initiative-display__hp-value {
-  color: color-mix(in srgb, var(--text-normal) 72%, var(--background-primary));
+  color: #fff;
   font-weight: 400;
-  -webkit-text-stroke: 0;
+  -webkit-text-stroke: 0.1px var(--background-primary);
 }
 
 .atlas-initiative-display {
@@ -286,6 +286,13 @@
   font-size: 0.9em;
   font-weight: 800;
   line-height: 1;
+}
+
+/* Keep the overflow count visually stable when the display font changes. */
+.atlas-initiative-display__condition-badge--overflow {
+  font-family: var(--font-interface), sans-serif;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .atlas-initiative-display__condition-value {
