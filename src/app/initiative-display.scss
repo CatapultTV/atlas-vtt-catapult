@@ -81,6 +81,7 @@
 }
 
 .atlas-initiative-display__portrait {
+  position: relative;
   display: grid;
   width: clamp(180px, 34vw, 440px);
   aspect-ratio: 1;
