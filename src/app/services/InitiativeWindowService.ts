@@ -10,6 +10,7 @@ export const INITIATIVE_WINDOW_BODY_CLASS = 'atlas-initiative-window';
  */
 export class InitiativeWindowService {
   private targetWindow: Window | null = null;
+  private chromeStyle: HTMLStyleElement | null = null;
 
   setup(view: ItemView): void {
     const targetWindow = view.contentEl.win;
@@ -26,9 +27,34 @@ export class InitiativeWindowService {
     this.targetWindow = targetWindow;
     this.copyMainWindowStyles(window.document, targetDocument);
     targetDocument.body.classList.add(INITIATIVE_WINDOW_BODY_CLASS);
+
+    // Apply the chrome rules directly in this popout document. This avoids relying on
+    // stylesheet-copy timing and cannot affect the main Obsidian window.
+    this.chromeStyle?.remove();
+    this.chromeStyle = targetDocument.createElement('style');
+    this.chromeStyle.dataset.atlasInitiativeWindow = 'true';
+    this.chromeStyle.textContent = `
+      body.${INITIATIVE_WINDOW_BODY_CLASS} {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body.${INITIATIVE_WINDOW_BODY_CLASS} .workspace-ribbon,
+      body.${INITIATIVE_WINDOW_BODY_CLASS} .workspace-tab-header-container,
+      body.${INITIATIVE_WINDOW_BODY_CLASS} .view-header,
+      body.${INITIATIVE_WINDOW_BODY_CLASS} .status-bar,
+      body.${INITIATIVE_WINDOW_BODY_CLASS} .titlebar {
+        display: none !important;
+      }
+    `;
+    targetDocument.head.appendChild(this.chromeStyle);
   }
 
   cleanup(): void {
+    this.chromeStyle?.remove();
+    this.chromeStyle = null;
     if (this.targetWindow && !this.targetWindow.closed) {
       this.targetWindow.document.body.classList.remove(INITIATIVE_WINDOW_BODY_CLASS);
     }

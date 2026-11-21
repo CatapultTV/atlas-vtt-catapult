@@ -344,22 +344,3 @@
     width: 100px;
   }
 }
-
-
-// Initiative Display popout chrome. This selector is activated only by InitiativeWindowService,
-// which marks the separate popout document (never the main Obsidian window).
-body.atlas-initiative-window {
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-
-  .workspace-ribbon,
-  .workspace-tab-header-container,
-  .view-header,
-  .status-bar,
-  .titlebar {
-    display: none !important;
-  }
-}
