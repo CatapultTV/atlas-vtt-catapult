@@ -69,29 +69,30 @@ export class InitiativeDisplayView extends ItemView {
 
   async onOpen(): Promise<void> {
     this.contentEl.addClass('atlas-initiative-display-content');
-    // Use the element's actual owner document: ItemView helpers can otherwise resolve to
-    // Obsidian's main document, which would hide chrome across the entire workspace.
-    const doc = this.contentEl.ownerDocument;
-    document.body.classList.remove('atlas-initiative-display-window');
-    if (doc !== document) {
-      // Popouts have a separate document. Mirror styles there and scope chrome hiding to it.
-      this.copyMainWindowStyles(doc);
-      doc.body.classList.add('atlas-initiative-display-window');
-    }
     this.contentEl.setText('Connecting to the Atlas map…');
+
+    // Match Atlas' existing LocalPlayerView window detection. Obsidian's `win`
+    // extension identifies the actual workspace window hosting this leaf; do not
+    // infer popout status from a DOM document comparison.
+    if (this.contentEl.win !== window) {
+      const doc = this.contentEl.doc;
+      this.copyMainWindowStyles(doc);
+      doc.body.addClass('atlas-initiative-display-window');
+    } else {
+      // Remove a stale marker left by older builds, but never add it to the main window.
+      this.contentEl.doc.body.removeClass('atlas-initiative-display-window');
+    }
+
     this.registerEvent(this.app.workspace.on('layout-change', () => this.queueReconnect()));
     this.app.workspace.onLayoutReady(() => this.queueReconnect());
   }
 
   async onClose(): Promise<void> {
     this.disconnect();
-    const doc = this.contentEl.ownerDocument;
-    if (doc !== document) doc.body.classList.remove('atlas-initiative-display-window');
-    // Clean up defensively in case an earlier version attached the class to the main window.
-    document.body.classList.remove('atlas-initiative-display-window');
+    // Same cleanup convention as Atlas' LocalPlayerView.
+    this.contentEl.doc.body.removeClass('atlas-initiative-display-window');
     this.contentEl.empty();
   }
-
   /** Mirrors the main window's stylesheets into the popout, without duplicating existing nodes. */
   private copyMainWindowStyles(doc: Document): void {
     const existing = new Set(
