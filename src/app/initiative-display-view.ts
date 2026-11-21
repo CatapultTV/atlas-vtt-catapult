@@ -269,7 +269,7 @@ export class InitiativeDisplayView extends ItemView {
     // Use fixed slots along the upper-left arc. The overflow badge therefore stays in
     // the same place regardless of the selected display font or the number of conditions.
     shown.forEach((condition, index) => {
-      const angle = (-0.75 * Math.PI) + index * (Math.PI / 2 / 5);
+      const angle = -Math.PI + index * (Math.PI / 2 / 5);
       const isOverflow = condition.id === 'overflow';
       const badge = badgeLayer.createDiv({
         cls: isOverflow

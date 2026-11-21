@@ -24,7 +24,7 @@
 .atlas-initiative-display[data-font='medieval'] .atlas-initiative-display__hp-value {
   color: #fff;
   font-weight: 400;
-  -webkit-text-stroke: 0.1px var(--background-primary);
+  -webkit-text-stroke: 0.45px #000;
 }
 
 .atlas-initiative-display {
@@ -200,7 +200,7 @@
   font-size: clamp(1.05rem, 1.8vw, 1.45rem);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
-  -webkit-text-stroke: 0.2px var(--background-primary);
+  -webkit-text-stroke: 0.55px #000;
   text-shadow: none;
   white-space: nowrap;
 }
