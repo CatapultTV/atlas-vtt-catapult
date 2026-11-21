@@ -8,7 +8,7 @@ import { visibleResources } from './resources/visibleResources';
 import { defeatedCombatants } from './initiative/defeated';
 import { mapInitiativeRules } from './services/mapInitiativeRules';
 import { rulesLookup } from './services/mapRules';
-import { playersEntryToken, sideIdsOf, type EntryToken } from './services/playerInitiativeList';
+import { playersEntryToken, sideIdsOf } from './services/playerInitiativeList';
 import { nameShownToPlayers } from './pixi/token-renderer/nameplateVisibility';
 import { portraitSrc } from './utils/portraitSrc';
 import type { TokenEntity } from './types';
@@ -28,7 +28,6 @@ interface InitiativeDisplaySession {
 interface VisibleCombatant {
   entry: InitiativeEntry;
   token: TokenEntity | undefined;
-  tokenView: EntryToken;
 }
 
 /**
@@ -138,7 +137,7 @@ export class InitiativeDisplayView extends ItemView {
         const tokenView = playersEntryToken(entry, tokens, definitions, conditions, sides);
         if (!tokenView) return [];
         const token = entry.tokenId ? tokens[entry.tokenId] : undefined;
-        return [{ entry, token, tokenView }];
+        return [{ entry, token }];
       });
 
     const defeated = defeatedCombatants(initiative.entries, tokens, definitions);
@@ -177,7 +176,7 @@ export class InitiativeDisplayView extends ItemView {
     playersSeeNames: boolean,
     current: boolean,
   ): void {
-    const { entry, token, tokenView } = combatant;
+    const { entry, token } = combatant;
     const card = parent.createDiv({ cls: current ? 'atlas-initiative-display__combatant atlas-initiative-display__combatant--current' : 'atlas-initiative-display__combatant atlas-initiative-display__combatant--next' });
     const avatar = card.createDiv({ cls: 'atlas-initiative-display__portrait' });
     const image = entry.imagePath ? portraitSrc(this.app, entry.imagePath) : null;
