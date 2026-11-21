@@ -5,6 +5,7 @@ import './styles/index.css';
 import './styles/main.scss';
 import { AtlasView, ATLAS_VIEW_TYPE } from './src/app/atlas-view';
 import { LocalPlayerView, LOCAL_PLAYER_VIEW_TYPE } from './src/app/local-player-view';
+import { InitiativeDisplayView, INITIATIVE_DISPLAY_VIEW_TYPE } from './src/app/initiative-display-view';
 import { DashboardView, DASHBOARD_VIEW_TYPE } from './src/app/dashboard-view';
 import { DungeonGeneratorView, DUNGEON_GENERATOR_VIEW_TYPE } from './src/app/dungeon-generator-view';
 import { SoundView, SOUND_VIEW_TYPE } from './src/app/sound-view';
@@ -405,6 +406,7 @@ export default class AtlasVTTPlugin extends Plugin {
     this.registerView(ATLAS_VIEW_TYPE, (leaf) => new AtlasView(leaf, this));
     // The player window is a second window, which only the desktop app has
     if (isDesktopApp()) this.registerView(LOCAL_PLAYER_VIEW_TYPE, (leaf) => new LocalPlayerView(leaf));
+    this.registerView(INITIATIVE_DISPLAY_VIEW_TYPE, (leaf) => new InitiativeDisplayView(leaf));
     this.registerView(DASHBOARD_VIEW_TYPE, (leaf) => new DashboardView(leaf, this));
     this.registerView(DUNGEON_GENERATOR_VIEW_TYPE, (leaf) => new DungeonGeneratorView(leaf));
     this.registerView(SOUND_VIEW_TYPE, (leaf) => new SoundView(leaf));
