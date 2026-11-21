@@ -121,7 +121,7 @@
 }
 
 /* HP is a single, prominent label-and-meter row rather than a resource card. */
-.atlas-initiative-display__resource--hp {
+.atlas-initiative-display__resource.atlas-initiative-display__resource--hp {
   display: flex;
   flex: 0 1 auto;
   width: min(100%, 680px);
@@ -145,7 +145,7 @@
   letter-spacing: 0.015em;
 }
 
-.atlas-initiative-display__resource-track--hp {
+.atlas-initiative-display__resource-track.atlas-initiative-display__resource-track--hp {
   position: relative;
   flex: 1 1 360px;
   width: 100%;
@@ -159,7 +159,7 @@
   box-shadow: none;
 }
 
-.atlas-initiative-display__resource-track--hp .atlas-initiative-display__resource-fill {
+.atlas-initiative-display__resource-track.atlas-initiative-display__resource-track.atlas-initiative-display__resource-track--hp .atlas-initiative-display__resource-fill {
   position: absolute;
   inset: 0 auto 0 0;
   min-width: 0;
