@@ -234,7 +234,11 @@ export class InitiativeDisplayView extends ItemView {
         });
         for (const { definition, value } of resources) {
           const isHp = definition.key === 'hp';
-          const resource = stats.createDiv({ cls: isHp ? 'atlas-initiative-display__resource atlas-initiative-display__resource--hp' : 'atlas-initiative-display__resource' });
+          const resource = stats.createDiv({
+            cls: isHp
+              ? `atlas-initiative-display__resource atlas-initiative-display__resource--hp${(combatant.playerToken.conditions?.length ?? 0) >= 3 ? ' atlas-initiative-display__resource--hp-with-conditions' : ''}`
+              : 'atlas-initiative-display__resource',
+          });
           resource.style.setProperty('--atlas-resource-color', definition.color);
           if (isHp) {
             resource.createDiv({ cls: 'atlas-initiative-display__hp-label', text: 'HP' });
