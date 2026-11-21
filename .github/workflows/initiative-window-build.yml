@@ -1,0 +1,39 @@
+name: Build Obsidian test plugin
+
+on:
+  push:
+    branches:
+      - feature/initiative-window
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Upload Obsidian plugin files
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-vtt-initiative-window
+          if-no-files-found: error
+          path: |
+            dist/main.js
+            dist/styles.css
+            manifest.json
