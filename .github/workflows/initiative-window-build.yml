@@ -28,16 +28,17 @@ jobs:
       - name: Build plugin
         run: npm run build
 
-      - name: Add requested stylesheet filename
-        run: cp dist/styles.css dist/style.css
+      - name: Prepare Obsidian test files
+        run: |
+          mkdir -p release
+          cp dist/main.js release/main.js
+          cp dist/styles.css release/style.css
+          cp dist/styles.css release/styles.css
+          cp manifest.json release/manifest.json
 
       - name: Upload Obsidian plugin files
         uses: actions/upload-artifact@v4
         with:
           name: atlas-vtt-initiative-window
           if-no-files-found: error
-          path: |
-            dist/main.js
-            dist/style.css
-            dist/styles.css
-            manifest.json
+          path: release/
