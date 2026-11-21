@@ -56,6 +56,14 @@
   justify-content: center;
 }
 
+/* The condition badges extend above the portrait. On desktop-sized displays,
+   lower the stage enough to keep those badges clear of the round indicator. */
+@media (min-width: 621px) {
+  .atlas-initiative-display__stage {
+    transform: translateY(clamp(1.5rem, 6vh, 4rem));
+  }
+}
+
 .atlas-initiative-display__current {
   display: flex;
   width: 100%;
