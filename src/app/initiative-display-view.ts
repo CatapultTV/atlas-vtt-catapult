@@ -69,11 +69,15 @@ export class InitiativeDisplayView extends ItemView {
 
   async onOpen(): Promise<void> {
     this.contentEl.addClass('atlas-initiative-display-content');
-    const doc = this.contentEl.doc;
-    // Obsidian popouts have a separate document, so mirror the main window's stylesheets
-    // before applying the scoped chrome-hiding class (the same approach as PlayerWindow).
-    this.copyMainWindowStyles(doc);
-    doc.body.addClass('atlas-initiative-display-window');
+    // Use the element's actual owner document: ItemView helpers can otherwise resolve to
+    // Obsidian's main document, which would hide chrome across the entire workspace.
+    const doc = this.contentEl.ownerDocument;
+    document.body.classList.remove('atlas-initiative-display-window');
+    if (doc !== document) {
+      // Popouts have a separate document. Mirror styles there and scope chrome hiding to it.
+      this.copyMainWindowStyles(doc);
+      doc.body.classList.add('atlas-initiative-display-window');
+    }
     this.contentEl.setText('Connecting to the Atlas map…');
     this.registerEvent(this.app.workspace.on('layout-change', () => this.queueReconnect()));
     this.app.workspace.onLayoutReady(() => this.queueReconnect());
@@ -81,7 +85,10 @@ export class InitiativeDisplayView extends ItemView {
 
   async onClose(): Promise<void> {
     this.disconnect();
-    this.contentEl.doc.body.removeClass('atlas-initiative-display-window');
+    const doc = this.contentEl.ownerDocument;
+    if (doc !== document) doc.body.classList.remove('atlas-initiative-display-window');
+    // Clean up defensively in case an earlier version attached the class to the main window.
+    document.body.classList.remove('atlas-initiative-display-window');
     this.contentEl.empty();
   }
 
