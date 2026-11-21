@@ -266,10 +266,10 @@ export class InitiativeDisplayView extends ItemView {
     const shown = conditions.length <= 6
       ? conditions
       : [...conditions.slice(0, 5), { id: 'overflow', name: `+${conditions.length - 5}`, color: 0x4a4a54, glyph: { kind: 'text' as const, text: `+${conditions.length - 5}` } }];
-    // Use fixed slots along the upper-left arc. The overflow badge therefore stays in
-    // the same place regardless of the selected display font or the number of conditions.
+    // Use fixed slots starting at the top and curving left. The overflow badge therefore
+    // stays in the same place regardless of the selected display font or condition count.
     shown.forEach((condition, index) => {
-      const angle = -Math.PI + index * (Math.PI / 2 / 5);
+      const angle = -Math.PI / 2 - index * (Math.PI / 2 / 5);
       const isOverflow = condition.id === 'overflow';
       const badge = badgeLayer.createDiv({
         cls: isOverflow
