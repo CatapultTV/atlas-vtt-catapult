@@ -45,6 +45,14 @@ export class InitiativeWindowService {
         padding: 0;
         overflow: hidden;
       }
+
+      /* The native titlebar is hidden in this popout, so make the display itself
+         a drag region, matching the Player Window's frameless-window behaviour. */
+      body.${INITIATIVE_WINDOW_BODY_CLASS} .atlas-initiative-display-content,
+      body.${INITIATIVE_WINDOW_BODY_CLASS} .atlas-initiative-display-content * {
+        -webkit-app-region: drag;
+      }
+
       body.${INITIATIVE_WINDOW_BODY_CLASS} .workspace-ribbon,
       body.${INITIATIVE_WINDOW_BODY_CLASS} .workspace-tab-header-container,
       body.${INITIATIVE_WINDOW_BODY_CLASS} .view-header,
