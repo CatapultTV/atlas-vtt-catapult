@@ -142,12 +142,14 @@
 /* HP is a single, prominent label-and-meter row rather than a resource card. */
 .atlas-initiative-display__resource.atlas-initiative-display__resource--hp {
   display: flex;
-  flex: 0 1 auto;
-  width: min(100%, 680px);
-  max-width: 100%;
+  flex: 0 1 680px;
+  width: 100%;
+  max-width: 680px;
   min-width: 0;
+  align-self: center;
   align-items: center;
   justify-content: center;
+  margin-inline: auto;
   gap: clamp(0.75rem, 2vw, 1.5rem);
   padding: 0;
   border: 0;
