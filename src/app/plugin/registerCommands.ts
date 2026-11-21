@@ -167,7 +167,12 @@ function registerMapCommands(plugin: Plugin, deps: CommandDependencies): void {
         showNotice('Open an Atlas map before opening the Initiative Display.');
         return;
       }
-      const leaf = app.workspace.getLeavesOfType(INITIATIVE_DISPLAY_VIEW_TYPE)[0] ?? app.workspace.openPopoutLeaf();
+      const mainDocument = app.workspace.containerEl.ownerDocument;
+      // Reuse only an Initiative Display that is already in a separate window. If one exists
+      // in the main workspace, leave it untouched and open the display in a dedicated popout.
+      const popoutLeaf = app.workspace.getLeavesOfType(INITIATIVE_DISPLAY_VIEW_TYPE)
+        .find((candidate) => candidate.view.containerEl.ownerDocument !== mainDocument);
+      const leaf = popoutLeaf ?? app.workspace.openPopoutLeaf();
       void leaf.setViewState({ type: INITIATIVE_DISPLAY_VIEW_TYPE, state: { sourceViewId: source.viewId, sourceFilePath: source.atlasStore.getState().mapPath ?? '' } });
     },
   });

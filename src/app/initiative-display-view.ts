@@ -48,6 +48,7 @@ export class InitiativeDisplayView extends ItemView {
   private stopStore: (() => void) | null = null;
   private stopSettings: (() => void) | null = null;
   private reconnectQueued = false;
+  private initiativeWindowDocument: Document | null = null;
 
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
@@ -70,16 +71,14 @@ export class InitiativeDisplayView extends ItemView {
   async onOpen(): Promise<void> {
     this.contentEl.addClass('atlas-initiative-display-content');
 
-    // Use the workspace's owning document as the authoritative main-window identity.
-    // Do not use the global window: Obsidian popouts can share plugin execution context.
+    // Identify this view's actual document. Only that document receives the popout styling.
     const mainDocument = this.app.workspace.containerEl.ownerDocument;
     const viewDocument = this.contentEl.ownerDocument;
+    this.initiativeWindowDocument = viewDocument !== mainDocument ? viewDocument : null;
 
-    // Clear a stale class left by earlier versions before deciding whether this is a popout.
-    mainDocument.body.classList.remove('atlas-initiative-display-window');
-    if (viewDocument !== mainDocument) {
-      this.copyMainWindowStyles(viewDocument);
-      viewDocument.body.classList.add('atlas-initiative-display-window');
+    if (this.initiativeWindowDocument) {
+      this.copyMainWindowStyles(mainDocument, this.initiativeWindowDocument);
+      this.initiativeWindowDocument.body.classList.add('atlas-initiative-display-window');
     }
     this.contentEl.setText('Connecting to the Atlas map…');
     this.registerEvent(this.app.workspace.on('layout-change', () => this.queueReconnect()));
@@ -88,25 +87,20 @@ export class InitiativeDisplayView extends ItemView {
 
   async onClose(): Promise<void> {
     this.disconnect();
-    const mainDocument = this.app.workspace.containerEl.ownerDocument;
-    const viewDocument = this.contentEl.ownerDocument;
-
-    // Never apply popout cleanup to the main document; also scrub stale legacy state.
-    if (viewDocument !== mainDocument) {
-      viewDocument.body.classList.remove('atlas-initiative-display-window');
-    }
-    mainDocument.body.classList.remove('atlas-initiative-display-window');
+    // Clean up only the document that this Initiative Display marked on open.
+    this.initiativeWindowDocument?.body.classList.remove('atlas-initiative-display-window');
+    this.initiativeWindowDocument = null;
     this.contentEl.empty();
   }
 
-  /** Mirrors the main window's stylesheets into the popout, skipping styles already present. */
-  private copyMainWindowStyles(doc: Document): void {
+  /** Mirrors the main window's stylesheets into this popout, skipping styles already present. */
+  private copyMainWindowStyles(sourceDocument: Document, targetDocument: Document): void {
     const existing = new Set(
-      Array.from(doc.head.querySelectorAll('link[rel=\"stylesheet\"], style')).map(initiativeStyleNodeKey),
+      Array.from(targetDocument.head.querySelectorAll('link[rel=\"stylesheet\"], style')).map(initiativeStyleNodeKey),
     );
-    document.head.querySelectorAll('link[rel=\"stylesheet\"], style').forEach((node) => {
+    sourceDocument.head.querySelectorAll('link[rel=\"stylesheet\"], style').forEach((node) => {
       if (existing.has(initiativeStyleNodeKey(node))) return;
-      doc.head.appendChild(doc.importNode(node, true));
+      targetDocument.head.appendChild(targetDocument.importNode(node, true));
     });
   }
 
