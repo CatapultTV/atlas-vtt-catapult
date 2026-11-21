@@ -273,6 +273,7 @@ export class InitiativeDisplayView extends ItemView {
         attr: { title: condition.name },
       });
       badge.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
+      badge.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
       badge.style.setProperty('--atlas-condition-x', `${50 + Math.cos(angle) * 48}%`);
       badge.style.setProperty('--atlas-condition-y', `${50 + Math.sin(angle) * 48}%`);
       const light = isLightBadgeColor(condition.color);
