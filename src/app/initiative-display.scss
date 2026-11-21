@@ -7,8 +7,21 @@
   color: var(--text-normal);
 }
 
-.atlas-initiative-display-window {
+/* Keep the initiative popout focused on the display rather than Obsidian's workspace chrome. */
+body.atlas-initiative-display-window {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
   background: var(--background-primary);
+
+  .workspace-ribbon,
+  .workspace-tab-header-container,
+  .view-header,
+  .status-bar {
+    display: none !important;
+  }
 }
 
 .atlas-initiative-display[data-font='medieval'] {
