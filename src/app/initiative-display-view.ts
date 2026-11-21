@@ -69,8 +69,16 @@ export class InitiativeDisplayView extends ItemView {
 
     this.initiativeWindowService.setup(this);
     this.contentEl.setText('Connecting to the Atlas map…');
-    this.registerEvent(this.app.workspace.on('layout-change', () => this.queueReconnect()));
-    this.app.workspace.onLayoutReady(() => this.queueReconnect());
+    this.registerEvent(this.app.workspace.on('layout-change', () => {
+      // Obsidian can move this leaf into a popout after onOpen has already run.
+      // Re-evaluate its owning window each time the workspace layout changes.
+      this.initiativeWindowService.setup(this);
+      this.queueReconnect();
+    }));
+    this.app.workspace.onLayoutReady(() => {
+      this.initiativeWindowService.setup(this);
+      this.queueReconnect();
+    });
   }
 
   async onClose(): Promise<void> {
