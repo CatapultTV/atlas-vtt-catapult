@@ -215,6 +215,11 @@ export class InitiativeDisplayView extends ItemView {
     if (image) avatar.createEl('img', { attr: { src: image, alt: '', draggable: 'false' } });
     else avatar.createDiv({ cls: 'atlas-initiative-display__portrait-placeholder', text: entry.isNPC ? '♟' : '●' });
     this.renderConditionBadges(avatar, combatant.playerToken.conditions ?? []);
+    // Condition badges sit beyond the portrait's lower edge (their orbit radius is 62%).
+    // Reserve that overflow in normal document flow so it cannot collide with the name/HP row.
+    if ((combatant.playerToken.conditions?.length ?? 0) >= 3) {
+      avatar.style.marginBottom = 'clamp(72px, 18vw, 100px)';
+    }
 
     const name = nameShownToPlayers(entry.name, token ?? { showNameplate: false }, mapShowsNameplates, playersSeeNames);
     if (name) card.createDiv({ cls: 'atlas-initiative-display__name', text: name });
@@ -240,11 +245,6 @@ export class InitiativeDisplayView extends ItemView {
               : 'atlas-initiative-display__resource',
           });
           resource.style.setProperty('--atlas-resource-color', definition.color);
-          // Use layout spacing rather than a CSS transform so the HP row is genuinely
-          // moved down in the resources layout when condition badges are present.
-          if (isHp && (combatant.playerToken.conditions?.length ?? 0) >= 3) {
-            resource.style.marginTop = 'clamp(52px, 5vw, 72px)';
-          }
           if (isHp) {
             resource.createDiv({ cls: 'atlas-initiative-display__hp-label', text: 'HP' });
             const track = resource.createDiv({
