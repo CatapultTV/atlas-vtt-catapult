@@ -243,7 +243,7 @@ export class InitiativeDisplayView extends ItemView {
           // Use layout spacing rather than a CSS transform so the HP row is genuinely
           // moved down in the resources layout when condition badges are present.
           if (isHp && (combatant.playerToken.conditions?.length ?? 0) >= 3) {
-            resource.style.marginTop = 'clamp(12px, 2vw, 22px)';
+            resource.style.marginTop = 'clamp(32px, 3vw, 44px)';
           }
           if (isHp) {
             resource.createDiv({ cls: 'atlas-initiative-display__hp-label', text: 'HP' });
