@@ -8,7 +8,7 @@ import { visibleResources } from './resources/visibleResources';
 import { defeatedCombatants } from './initiative/defeated';
 import { mapInitiativeRules } from './services/mapInitiativeRules';
 import { rulesLookup } from './services/mapRules';
-import { playersEntryToken, sideIdsOf } from './services/playerInitiativeList';
+import { playersEntryToken, sideIdsOf, type EntryToken } from './services/playerInitiativeList';
 import { nameShownToPlayers } from './pixi/token-renderer/nameplateVisibility';
 import { portraitSrc } from './utils/portraitSrc';
 import type { TokenEntity } from './types';
@@ -28,6 +28,7 @@ interface InitiativeDisplaySession {
 interface VisibleCombatant {
   entry: InitiativeEntry;
   token: TokenEntity | undefined;
+  playerToken: EntryToken;
 }
 
 /**
@@ -154,7 +155,7 @@ export class InitiativeDisplayView extends ItemView {
         const tokenView = playersEntryToken(entry, tokens, definitions, conditions, sides);
         if (!tokenView) return [];
         const token = entry.tokenId ? tokens[entry.tokenId] : undefined;
-        return [{ entry, token }];
+        return [{ entry, token, playerToken: tokenView }];
       });
 
     const defeated = defeatedCombatants(initiative.entries, tokens, definitions);
@@ -203,14 +204,46 @@ export class InitiativeDisplayView extends ItemView {
     const name = nameShownToPlayers(entry.name, token ?? { showNameplate: false }, mapShowsNameplates, playersSeeNames);
     if (name) card.createDiv({ cls: 'atlas-initiative-display__name', text: name });
 
-    if (current && token) {
-      const resources = visibleResources(token, definitions, 'player');
+    if (current) {
+      const resources = token ? visibleResources(token, definitions, 'player') : [];
       if (resources.length > 0) {
-        const stats = card.createDiv({ cls: 'atlas-initiative-display__resources' });
+        const stats = card.createDiv({
+          cls: 'atlas-initiative-display__resources',
+          attr: { role: 'group', 'aria-label': 'Visible combatant resources' },
+        });
         for (const { definition, value } of resources) {
           const resource = stats.createDiv({ cls: 'atlas-initiative-display__resource' });
-          resource.createDiv({ cls: 'atlas-initiative-display__resource-name', text: definition.name });
-          resource.createDiv({ cls: 'atlas-initiative-display__resource-value', text: `${value.current} / ${value.max}` });
+          resource.style.setProperty('--atlas-resource-color', definition.color);
+          resource.createDiv({ cls: 'atlas-initiative-display__resource-heading' }, (heading) => {
+            heading.createDiv({ cls: 'atlas-initiative-display__resource-name', text: definition.name });
+            heading.createDiv({
+              cls: 'atlas-initiative-display__resource-value',
+              text: definition.direction === 'static' ? String(value.max) : `${value.current} / ${value.max}`,
+            });
+          });
+          if (definition.direction !== 'static' && value.max > 0) {
+            const track = resource.createDiv({
+              cls: 'atlas-initiative-display__resource-track',
+              attr: { role: 'meter', 'aria-label': definition.name, 'aria-valuemin': '0', 'aria-valuemax': String(value.max), 'aria-valuenow': String(value.current) },
+            });
+            const fill = track.createDiv({ cls: 'atlas-initiative-display__resource-fill' });
+            fill.style.width = `${Math.max(0, Math.min(100, (value.current / value.max) * 100))}%`;
+          }
+        }
+      }
+      const conditions = combatant.playerToken.conditions ?? [];
+      if (conditions.length > 0) {
+        const conditionList = card.createDiv({
+          cls: 'atlas-initiative-display__conditions',
+          attr: { role: 'group', 'aria-label': 'Active conditions' },
+        });
+        for (const condition of conditions) {
+          const badge = conditionList.createDiv({
+            cls: 'atlas-initiative-display__condition',
+            text: condition.name,
+            attr: { title: condition.name },
+          });
+          badge.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
         }
       }
     }
