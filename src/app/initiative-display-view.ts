@@ -274,19 +274,13 @@ export class InitiativeDisplayView extends ItemView {
       cls: 'atlas-initiative-display__condition-ring',
       attr: { role: 'group', 'aria-label': `Active conditions: ${conditions.map(({ name }) => name).join(', ')}` },
     });
-    const maxBadges = 12;
-    const shown = conditions.length <= maxBadges
+    const shown = conditions.length <= 6
       ? conditions
-      : [...conditions.slice(0, maxBadges - 1), {
-        id: 'overflow',
-        name: `+${conditions.length - (maxBadges - 1)}`,
-        color: 0x4a4a54,
-        glyph: { kind: 'text' as const, text: `+${conditions.length - (maxBadges - 1)}` },
-      }];
-    // Start at the left edge and distribute badges clockwise around the full token.
-    // When there are too many conditions, the final slot remains the +n overflow badge.
+      : [...conditions.slice(0, 5), { id: 'overflow', name: `+${conditions.length - 5}`, color: 0x4a4a54, glyph: { kind: 'text' as const, text: `+${conditions.length - 5}` } }];
+    // Use fixed slots starting at the top and curving left. The overflow badge therefore
+    // stays in the same place regardless of the selected display font or condition count.
     shown.forEach((condition, index) => {
-      const angle = Math.PI + index * (Math.PI * 2 / shown.length);
+      const angle = -Math.PI / 2 - index * (Math.PI / 2 / 5);
       const isOverflow = condition.id === 'overflow';
       const badge = badgeLayer.createDiv({
         cls: isOverflow
@@ -296,8 +290,8 @@ export class InitiativeDisplayView extends ItemView {
       });
       badge.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
       badge.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
-      badge.style.setProperty('--atlas-condition-x', `${50 + Math.cos(angle) * 70}%`);
-      badge.style.setProperty('--atlas-condition-y', `${50 + Math.sin(angle) * 70}%`);
+      badge.style.setProperty('--atlas-condition-x', `${50 + Math.cos(angle) * 62}%`);
+      badge.style.setProperty('--atlas-condition-y', `${50 + Math.sin(angle) * 62}%`);
       const light = isLightBadgeColor(condition.color);
       const glyphColor = light ? '#16161a' : '#fff';
       if (condition.glyph.kind === 'icon') {
