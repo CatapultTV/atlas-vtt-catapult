@@ -215,6 +215,11 @@ export class InitiativeDisplayView extends ItemView {
     if (image) avatar.createEl('img', { attr: { src: image, alt: '', draggable: 'false' } });
     else avatar.createDiv({ cls: 'atlas-initiative-display__portrait-placeholder', text: entry.isNPC ? '♟' : '●' });
     this.renderConditionBadges(avatar, combatant.playerToken.conditions ?? []);
+    // Condition badges extend beyond the portrait's lower edge. Reserve the tested
+    // responsive space in normal flow so the name and HP row remain clear.
+    if ((combatant.playerToken.conditions?.length ?? 0) >= 3) {
+      avatar.style.marginBottom = 'clamp(32px, 6.2vw, 80px)';
+    }
 
     const name = nameShownToPlayers(entry.name, token ?? { showNameplate: false }, mapShowsNameplates, playersSeeNames);
     if (name) card.createDiv({ cls: 'atlas-initiative-display__name', text: name });
@@ -236,7 +241,7 @@ export class InitiativeDisplayView extends ItemView {
           const isHp = definition.key === 'hp';
           const resource = stats.createDiv({
             cls: isHp
-              ? `atlas-initiative-display__resource atlas-initiative-display__resource--hp${(combatant.playerToken.conditions?.length ?? 0) >= 3 ? ' atlas-initiative-display__resource--hp-with-conditions' : ''}`
+              ? 'atlas-initiative-display__resource atlas-initiative-display__resource--hp'
               : 'atlas-initiative-display__resource',
           });
           resource.style.setProperty('--atlas-resource-color', definition.color);
