@@ -206,6 +206,12 @@ export class InitiativeDisplayView extends ItemView {
 
     if (current) {
       const resources = token ? visibleResources(token, definitions, 'player') : [];
+      // Atlas' player initiative list treats HP separately from ordinary resources. Mirror its
+      // explicit visibility rule and use the player-safe HP value supplied by playersEntryToken.
+      const hpDefinition = definitions.find((definition) => definition.key === 'hp' && definition.visibleToPlayers);
+      if (hpDefinition && combatant.playerToken.hp && !resources.some(({ definition }) => definition.key === 'hp')) {
+        resources.unshift({ definition: hpDefinition, value: combatant.playerToken.hp, slot: -1 });
+      }
       if (resources.length > 0) {
         const stats = card.createDiv({
           cls: 'atlas-initiative-display__resources',
