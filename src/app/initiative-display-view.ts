@@ -218,22 +218,34 @@ export class InitiativeDisplayView extends ItemView {
           attr: { role: 'group', 'aria-label': 'Visible combatant resources' },
         });
         for (const { definition, value } of resources) {
-          const resource = stats.createDiv({ cls: 'atlas-initiative-display__resource' });
+          const isHp = definition.key === 'hp';
+          const resource = stats.createDiv({ cls: isHp ? 'atlas-initiative-display__resource atlas-initiative-display__resource--hp' : 'atlas-initiative-display__resource' });
           resource.style.setProperty('--atlas-resource-color', definition.color);
-          resource.createDiv({ cls: 'atlas-initiative-display__resource-heading' }, (heading) => {
-            heading.createDiv({ cls: 'atlas-initiative-display__resource-name', text: definition.name });
-            heading.createDiv({
-              cls: 'atlas-initiative-display__resource-value',
-              text: definition.direction === 'static' ? String(value.max) : `${value.current} / ${value.max}`,
-            });
-          });
-          if (definition.direction !== 'static' && value.max > 0) {
+          if (isHp) {
+            resource.createDiv({ cls: 'atlas-initiative-display__hp-label', text: 'HP' });
             const track = resource.createDiv({
-              cls: 'atlas-initiative-display__resource-track',
+              cls: 'atlas-initiative-display__resource-track atlas-initiative-display__resource-track--hp',
               attr: { role: 'meter', 'aria-label': definition.name, 'aria-valuemin': '0', 'aria-valuemax': String(value.max), 'aria-valuenow': String(value.current) },
             });
             const fill = track.createDiv({ cls: 'atlas-initiative-display__resource-fill' });
-            fill.style.width = `${Math.max(0, Math.min(100, (value.current / value.max) * 100))}%`;
+            fill.style.width = `${value.max > 0 ? Math.max(0, Math.min(100, (value.current / value.max) * 100)) : 0}%`;
+            track.createDiv({ cls: 'atlas-initiative-display__hp-value', text: `${value.current} / ${value.max}` });
+          } else {
+            resource.createDiv({ cls: 'atlas-initiative-display__resource-heading' }, (heading) => {
+              heading.createDiv({ cls: 'atlas-initiative-display__resource-name', text: definition.name });
+              heading.createDiv({
+                cls: 'atlas-initiative-display__resource-value',
+                text: definition.direction === 'static' ? String(value.max) : `${value.current} / ${value.max}`,
+              });
+            });
+            if (definition.direction !== 'static' && value.max > 0) {
+              const track = resource.createDiv({
+                cls: 'atlas-initiative-display__resource-track',
+                attr: { role: 'meter', 'aria-label': definition.name, 'aria-valuemin': '0', 'aria-valuemax': String(value.max), 'aria-valuenow': String(value.current) },
+              });
+              const fill = track.createDiv({ cls: 'atlas-initiative-display__resource-fill' });
+              fill.style.width = `${Math.max(0, Math.min(100, (value.current / value.max) * 100))}%`;
+            }
           }
         }
       }
