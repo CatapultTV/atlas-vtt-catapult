@@ -113,31 +113,76 @@
 
 .atlas-initiative-display__resources {
   display: flex;
-  max-width: 100%;
+  width: min(100%, 760px);
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.75rem;
 }
 
 .atlas-initiative-display__resource {
-  min-width: 110px;
-  padding: 0.65rem 1rem;
+  flex: 1 1 170px;
+  min-width: 145px;
+  max-width: 230px;
+  padding: 0.8rem 1rem;
   border: 1px solid var(--background-modifier-border);
+  border-top: 3px solid var(--atlas-resource-color, var(--interactive-accent));
   border-radius: var(--radius-m);
   background: var(--background-secondary);
+  text-align: left;
+}
+
+.atlas-initiative-display__resource-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .atlas-initiative-display__resource-name {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
 .atlas-initiative-display__resource-value {
-  margin-top: 0.2rem;
+  color: var(--text-normal);
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 750;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.atlas-initiative-display__resource-track {
+  height: 8px;
+  margin-top: 0.65rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--background-modifier-border);
+}
+
+.atlas-initiative-display__resource-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--atlas-resource-color, var(--interactive-accent));
+  transition: width 180ms ease;
+}
+
+.atlas-initiative-display__conditions {
+  display: flex;
+  max-width: min(100%, 760px);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.atlas-initiative-display__condition {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--atlas-condition-color, var(--background-modifier-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--atlas-condition-color, var(--background-secondary)) 14%, var(--background-secondary));
+  color: var(--text-normal);
+  font-size: 0.9rem;
+  font-weight: 650;
 }
 
 .atlas-initiative-display__empty {
