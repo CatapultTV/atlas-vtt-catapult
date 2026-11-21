@@ -18,11 +18,7 @@ import type { InitiativeEntry } from './types/initiativeTypes';
 import type { ViewAtlasState } from './storeFactory';
 import { t } from './i18n';
 import './initiative-display.scss';
-
-/** Identifies stylesheet nodes so the popout does not receive duplicate styles. */
-function initiativeStyleNodeKey(node: Element): string {
-  return node instanceof HTMLLinkElement ? `link:${node.href}` : `style:${node.textContent ?? ''}`;
-}
+import { InitiativeWindowService } from './services/InitiativeWindowService';
 
 export const INITIATIVE_DISPLAY_VIEW_TYPE = 'atlas-vtt-initiative-display';
 
@@ -48,8 +44,7 @@ export class InitiativeDisplayView extends ItemView {
   private stopStore: (() => void) | null = null;
   private stopSettings: (() => void) | null = null;
   private reconnectQueued = false;
-  private initiativeWindowDocument: Document | null = null;
-  private initiativeWindowStyle: HTMLStyleElement | null = null;
+  private readonly initiativeWindowService = new InitiativeWindowService();
 
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
@@ -72,26 +67,7 @@ export class InitiativeDisplayView extends ItemView {
   async onOpen(): Promise<void> {
     this.contentEl.addClass('atlas-initiative-display-content');
 
-    // Obsidian exposes the actual root container for this leaf. A popout uses a
-    // WorkspaceWindow; the main workspace uses workspace.rootSplit (WorkspaceRoot).
-    const mainDocument = this.app.workspace.rootSplit.doc;
-    const viewDocument = this.leaf.getContainer().doc;
-    this.initiativeWindowDocument = viewDocument !== mainDocument ? viewDocument : null;
-
-    if (this.initiativeWindowDocument) {
-      this.copyMainWindowStyles(mainDocument, this.initiativeWindowDocument);
-      // This rule is created only in the popout document, never in the shared plugin CSS.
-      this.initiativeWindowStyle = this.initiativeWindowDocument.createElement('style');
-      this.initiativeWindowStyle.dataset.atlasInitiativeDisplayWindow = 'true';
-      this.initiativeWindowStyle.textContent = [
-        '.workspace-ribbon,',
-        '.workspace-tab-header-container,',
-        '.view-header,',
-        '.status-bar { display: none !important; }',
-        'html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }'
-      ].join('\n');
-      this.initiativeWindowDocument.head.appendChild(this.initiativeWindowStyle);
-    }
+    this.initiativeWindowService.setup(this);
     this.contentEl.setText('Connecting to the Atlas map…');
     this.registerEvent(this.app.workspace.on('layout-change', () => this.queueReconnect()));
     this.app.workspace.onLayoutReady(() => this.queueReconnect());
@@ -99,22 +75,8 @@ export class InitiativeDisplayView extends ItemView {
 
   async onClose(): Promise<void> {
     this.disconnect();
-    // Clean up only the document that this Initiative Display marked on open.
-    this.initiativeWindowStyle?.remove();
-    this.initiativeWindowStyle = null;
-    this.initiativeWindowDocument = null;
+    this.initiativeWindowService.cleanup();
     this.contentEl.empty();
-  }
-
-  /** Mirrors the main window's stylesheets into this popout, skipping styles already present. */
-  private copyMainWindowStyles(sourceDocument: Document, targetDocument: Document): void {
-    const existing = new Set(
-      Array.from(targetDocument.head.querySelectorAll('link[rel=\"stylesheet\"], style')).map(initiativeStyleNodeKey),
-    );
-    sourceDocument.head.querySelectorAll('link[rel=\"stylesheet\"], style').forEach((node) => {
-      if (existing.has(initiativeStyleNodeKey(node))) return;
-      targetDocument.head.appendChild(targetDocument.importNode(node, true));
-    });
   }
 
   private queueReconnect(): void {
