@@ -1,4 +1,4 @@
-name: Build Obsidian test plugin
+name: Build and release Obsidian test plugin
 
 on:
   push:
@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -35,10 +35,19 @@ jobs:
           cp dist/styles.css release/style.css
           cp dist/styles.css release/styles.css
           cp manifest.json release/manifest.json
+          cd release
+          zip -r ../atlas-vtt-initiative-window.zip main.js style.css styles.css manifest.json
 
-      - name: Upload Obsidian plugin files
-        uses: actions/upload-artifact@v4
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
         with:
-          name: atlas-vtt-initiative-window
-          if-no-files-found: error
-          path: release/
+          tag_name: initiative-window-build-${{ github.run_number }}
+          name: Initiative Window build ${{ github.run_number }}
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            atlas-vtt-initiative-window.zip
+            release/main.js
+            release/style.css
+            release/styles.css
+            release/manifest.json
