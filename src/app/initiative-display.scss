@@ -7,8 +7,21 @@
   color: var(--text-normal);
 }
 
-.atlas-initiative-display-window {
+/* Obsidian workspace chrome is hidden only in the Initiative Display popout. */
+body.atlas-initiative-display-window {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
   background: var(--background-primary);
+
+  .workspace-ribbon,
+  .workspace-tab-header-container,
+  .view-header,
+  .status-bar {
+    display: none !important;
+  }
 }
 
 .atlas-initiative-display[data-font='medieval'] {

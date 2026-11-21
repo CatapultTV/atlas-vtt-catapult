@@ -19,6 +19,11 @@ import type { ViewAtlasState } from './storeFactory';
 import { t } from './i18n';
 import './initiative-display.scss';
 
+/** Identifies stylesheet nodes so the popout does not receive duplicate styles. */
+function initiativeStyleNodeKey(node: Element): string {
+  return node instanceof HTMLLinkElement ? `link:${node.href}` : `style:${node.textContent ?? ''}`;
+}
+
 export const INITIATIVE_DISPLAY_VIEW_TYPE = 'atlas-vtt-initiative-display';
 
 interface InitiativeDisplaySession {
@@ -64,7 +69,12 @@ export class InitiativeDisplayView extends ItemView {
 
   async onOpen(): Promise<void> {
     this.contentEl.addClass('atlas-initiative-display-content');
-    this.contentEl.doc.body.addClass('atlas-initiative-display-window');
+    // Follow Atlas' LocalPlayerView pattern: only mark a separate Obsidian popout window.
+    if (this.contentEl.win !== window) {
+      const doc = this.contentEl.doc;
+      this.copyMainWindowStyles(doc);
+      doc.body.addClass('atlas-initiative-display-window');
+    }
     this.contentEl.setText('Connecting to the Atlas map…');
     this.registerEvent(this.app.workspace.on('layout-change', () => this.queueReconnect()));
     this.app.workspace.onLayoutReady(() => this.queueReconnect());
@@ -74,6 +84,17 @@ export class InitiativeDisplayView extends ItemView {
     this.disconnect();
     this.contentEl.doc.body.removeClass('atlas-initiative-display-window');
     this.contentEl.empty();
+  }
+
+  /** Mirrors the main window's stylesheets into the popout, skipping styles already present. */
+  private copyMainWindowStyles(doc: Document): void {
+    const existing = new Set(
+      Array.from(doc.head.querySelectorAll('link[rel=\"stylesheet\"], style')).map(initiativeStyleNodeKey),
+    );
+    document.head.querySelectorAll('link[rel=\"stylesheet\"], style').forEach((node) => {
+      if (existing.has(initiativeStyleNodeKey(node))) return;
+      doc.head.appendChild(doc.importNode(node, true));
+    });
   }
 
   private queueReconnect(): void {
