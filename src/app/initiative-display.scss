@@ -156,7 +156,7 @@
   transform: translateX(-clamp(8px, 1.5vw, 20px));
 }
 
-.atlas-initiative-display__resource--hp-with-conditions {
+.atlas-initiative-display__resource.atlas-initiative-display__resource--hp.atlas-initiative-display__resource--hp-with-conditions {
   transform: translate(-clamp(8px, 1.5vw, 20px), clamp(12px, 2vw, 22px));
 }
 
