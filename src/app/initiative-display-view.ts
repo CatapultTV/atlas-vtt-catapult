@@ -99,10 +99,10 @@ export class InitiativeDisplayView extends ItemView {
       return;
     }
 
-    this.stopStore = source.atlasStore.subscribe((state) => this.render(state));
+    this.stopStore = source.atlasStore.subscribe((state) => this.renderSafely(state));
     const settings = source.serviceManager.getSettingsService();
-    this.stopSettings = settings.onChange(() => this.render(source.atlasStore.getState()));
-    this.render(source.atlasStore.getState());
+    this.stopSettings = settings.onChange(() => this.renderSafely(source.atlasStore.getState()));
+    this.renderSafely(source.atlasStore.getState());
   }
 
   private disconnect(): void {
@@ -111,6 +111,23 @@ export class InitiativeDisplayView extends ItemView {
     this.stopSettings?.();
     this.stopSettings = null;
     this.sourceView = null;
+  }
+
+  /**
+   * A display is an optional, read-only window. A malformed or partially loaded map must not
+   * let a rendering error escape a store/settings subscription and disrupt the Atlas workspace.
+   */
+  private renderSafely(state: ViewAtlasState): void {
+    try {
+      this.render(state);
+    } catch (error) {
+      console.error('[Atlas] Could not update the Initiative Display:', error);
+      this.contentEl.empty();
+      this.contentEl.createDiv({
+        cls: 'atlas-initiative-display__empty',
+        text: 'The Initiative Display could not be updated. Check the developer console for details.',
+      });
+    }
   }
 
   private render(state: ViewAtlasState): void {
