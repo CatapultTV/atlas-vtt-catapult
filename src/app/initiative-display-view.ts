@@ -69,11 +69,17 @@ export class InitiativeDisplayView extends ItemView {
 
   async onOpen(): Promise<void> {
     this.contentEl.addClass('atlas-initiative-display-content');
-    // Follow Atlas' LocalPlayerView pattern: only mark a separate Obsidian popout window.
-    if (this.contentEl.win !== window) {
-      const doc = this.contentEl.doc;
-      this.copyMainWindowStyles(doc);
-      doc.body.addClass('atlas-initiative-display-window');
+
+    // Use the workspace's owning document as the authoritative main-window identity.
+    // Do not use the global window: Obsidian popouts can share plugin execution context.
+    const mainDocument = this.app.workspace.containerEl.ownerDocument;
+    const viewDocument = this.contentEl.ownerDocument;
+
+    // Clear a stale class left by earlier versions before deciding whether this is a popout.
+    mainDocument.body.classList.remove('atlas-initiative-display-window');
+    if (viewDocument !== mainDocument) {
+      this.copyMainWindowStyles(viewDocument);
+      viewDocument.body.classList.add('atlas-initiative-display-window');
     }
     this.contentEl.setText('Connecting to the Atlas map…');
     this.registerEvent(this.app.workspace.on('layout-change', () => this.queueReconnect()));
@@ -82,7 +88,14 @@ export class InitiativeDisplayView extends ItemView {
 
   async onClose(): Promise<void> {
     this.disconnect();
-    this.contentEl.doc.body.removeClass('atlas-initiative-display-window');
+    const mainDocument = this.app.workspace.containerEl.ownerDocument;
+    const viewDocument = this.contentEl.ownerDocument;
+
+    // Never apply popout cleanup to the main document; also scrub stale legacy state.
+    if (viewDocument !== mainDocument) {
+      viewDocument.body.classList.remove('atlas-initiative-display-window');
+    }
+    mainDocument.body.classList.remove('atlas-initiative-display-window');
     this.contentEl.empty();
   }
 
