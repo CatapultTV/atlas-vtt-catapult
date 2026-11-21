@@ -168,7 +168,7 @@ function registerMapCommands(plugin: Plugin, deps: CommandDependencies): void {
         return;
       }
       const leaf = app.workspace.getLeavesOfType(INITIATIVE_DISPLAY_VIEW_TYPE)[0] ?? app.workspace.openPopoutLeaf();
-      void leaf.setViewState({ type: INITIATIVE_DISPLAY_VIEW_TYPE, state: { sourceViewId: source.viewId } });
+      void leaf.setViewState({ type: INITIATIVE_DISPLAY_VIEW_TYPE, state: { sourceViewId: source.viewId, sourceFilePath: source.atlasStore.getState().mapPath ?? '' } });
     },
   });
 
