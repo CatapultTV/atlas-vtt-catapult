@@ -19,6 +19,14 @@
   font-family: 'Atlas Oxanium', sans-serif;
 }
 
+/* The decorative medieval face has naturally heavier numerals; keep HP legible
+   and visually balanced with the other fonts inside the pill. */
+.atlas-initiative-display[data-font='medieval'] .atlas-initiative-display__hp-value {
+  color: color-mix(in srgb, var(--text-normal) 72%, var(--background-primary));
+  font-weight: 400;
+  -webkit-text-stroke: 0;
+}
+
 .atlas-initiative-display {
   position: relative;
   display: flex;
@@ -38,7 +46,7 @@
   left: 50%;
   transform: translateX(-50%);
   color: var(--text-muted);
-  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-size: clamp(1.65rem, 3.2vw, 2.4rem);
   font-weight: 600;
   letter-spacing: 0.04em;
 }
