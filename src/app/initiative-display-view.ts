@@ -321,25 +321,11 @@ export class InitiativeDisplayView extends ItemView {
       }
     }
 
-    // First try to fit every condition by scaling the key to the available height.
-    // This applies at every window size, not just when the display is fullscreen.
-    const targetRows = Math.ceil(items.length / 2);
-    const initialItemHeight = Math.max(24, ...items.map((item) => item.getBoundingClientRect().height));
-    const availableForItems = Math.max(0, availableHeight - titleHeight - padding - rowGap * Math.max(0, targetRows - 1));
-    const scale = Math.min(1, Math.max(0.58, availableForItems / (targetRows * initialItemHeight)));
-    key.style.setProperty('--atlas-condition-key-scale', String(scale));
-
-    // Re-measure after scaling, then reserve one cell for +n only if even the
-    // compact layout cannot fit all entries.
-    const itemHeight = Math.max(24, ...items.map((item) => item.getBoundingClientRect().height));
-    const scaledStyle = getComputedStyle(key);
-    const scaledPadding = (Number.parseFloat(scaledStyle.paddingTop) || 0) + (Number.parseFloat(scaledStyle.paddingBottom) || 0);
-    const scaledRowGap = Number.parseFloat(scaledStyle.rowGap) || 0;
-    const scaledTitleHeight = title.getBoundingClientRect().height;
-    const rowHeight = itemHeight + scaledRowGap;
-    const maxRows = Math.max(1, Math.floor((Math.max(0, availableHeight - scaledTitleHeight - scaledPadding) + scaledRowGap) / rowHeight));
-    // Use every available two-column cell. Larger displays can fit many more
-    // conditions because the key's symbols and labels scale down responsively.
+    // Keep condition symbols and text at their normal size. Use the full clear
+    // vertical area instead; only show +n when there is genuinely no room for another row.
+    const itemHeight = Math.max(30, ...items.map((item) => item.getBoundingClientRect().height));
+    const rowHeight = itemHeight + rowGap;
+    const maxRows = Math.max(1, Math.floor((Math.max(0, availableHeight - titleHeight - padding) + rowGap) / rowHeight));
     const maxCells = maxRows * 2;
     const overflowNeeded = items.length > maxCells;
     const visibleCount = overflowNeeded ? Math.max(0, maxCells - 1) : items.length;
