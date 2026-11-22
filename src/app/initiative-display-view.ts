@@ -179,8 +179,7 @@ export class InitiativeDisplayView extends ItemView {
     if (active.length === 0) {
       root.createDiv({ cls: 'atlas-initiative-display__empty', text: 'No visible combatant currently holds the turn' });
       this.renderConditionKey(root, visible, conditions);
-
-    root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
+      root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
       return;
     }
 
@@ -191,6 +190,7 @@ export class InitiativeDisplayView extends ItemView {
     const playersSeeNames = settings?.showTokenNameplates ?? false;
     const mapShowsNameplates = state.tokenSettings?.showNameplates ?? false;
 
+    this.renderConditionKey(root, visible, conditions);
     root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
     const stage = root.createDiv({ cls: 'atlas-initiative-display__stage' });
     const currentPanel = stage.createDiv({ cls: 'atlas-initiative-display__current' });
