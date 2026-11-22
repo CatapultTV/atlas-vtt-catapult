@@ -29,7 +29,7 @@ export interface NavigationSettings {
 export const TUTORIAL_IDS = ['dashboard', 'map', 'online', 'tableLog', 'assets', 'palette', 'tokenStatblocks', 'lootSettings', 'lootRoller', 'lootResults', 'savedRolls'] as const;
 export type TutorialId = typeof TUTORIAL_IDS[number];
 
-export type InitiativeDisplayConditionKeyMode = 'dynamic' | 'full';
+export type InitiativeDisplayConditionKeyMode = 'dynamic' | 'active' | 'complete';
 
 export interface AtlasSettings {
   showChangelogOnUpdate: boolean;

@@ -55,7 +55,8 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
             value={conditionKeyMode}
             options={[
               { value: 'dynamic', label: t('palette.initiativeDisplayConditionKeyDynamic') },
-              { value: 'full', label: t('palette.initiativeDisplayConditionKeyFull') },
+              { value: 'active', label: t('palette.initiativeDisplayConditionKeyActive') },
+              { value: 'complete', label: t('palette.initiativeDisplayConditionKeyComplete') },
             ]}
             ariaLabel={t('palette.initiativeDisplayConditionKey')}
             onChange={(next) => settings?.setInitiativeDisplayConditionKeyMode(next)}

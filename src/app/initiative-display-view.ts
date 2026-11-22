@@ -11,7 +11,7 @@ import { rulesLookup } from './services/mapRules';
 import { playersEntryToken, sideIdsOf, type EntryToken } from './services/playerInitiativeList';
 import { nameShownToPlayers } from './pixi/token-renderer/nameplateVisibility';
 import { WIDGET_ICON_PATHS } from './types/widgetIcons';
-import { isLightBadgeColor } from './utils/conditionGlyph';
+import { conditionGlyph, isLightBadgeColor } from './utils/conditionGlyph';
 import { portraitSrc } from './utils/portraitSrc';
 import type { TokenEntity } from './types';
 import type { InitiativeEntry } from './types/initiativeTypes';
@@ -176,7 +176,9 @@ export class InitiativeDisplayView extends ItemView {
     const holders = turnEntries(currentTurn(initiative), initiative, tokens, defeated);
     const holderIds = new Set(holders.map((entry) => entry.id));
     const active = visible.filter(({ entry }) => holderIds.has(entry.id));
+    const conditionKeyMode = this.sourceView?.serviceManager.getSettingsService().getInitiativeDisplayConditionKeyMode() ?? 'dynamic';
     if (active.length === 0) {
+      if (conditionKeyMode === 'complete') this.renderConditionKey(root, [], conditions, conditionKeyMode);
       root.createDiv({ cls: 'atlas-initiative-display__empty', text: 'No visible combatant currently holds the turn' });
       root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
       return;
@@ -192,13 +194,12 @@ export class InitiativeDisplayView extends ItemView {
     // On a player character's turn, show the conditions affecting the player party.
     // On an enemy's turn, show only that enemy's conditions; listing every enemy's
     // conditions would add noise when the party is waiting to act.
-    const conditionKeyMode = this.sourceView?.serviceManager.getSettingsService().getInitiativeDisplayConditionKeyMode() ?? 'dynamic';
-    const conditionSubjects = conditionKeyMode === 'full'
+    const conditionSubjects = conditionKeyMode === 'active'
       ? visible
       : current.entry.isNPC
         ? [current]
         : visible.filter(({ entry }) => !entry.isNPC);
-    this.renderConditionKey(root, conditionSubjects, conditions);
+    this.renderConditionKey(root, conditionSubjects, conditions, conditionKeyMode);
     root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
     const stage = root.createDiv({ cls: 'atlas-initiative-display__stage' });
     const currentPanel = stage.createDiv({ cls: 'atlas-initiative-display__current' });
@@ -215,6 +216,7 @@ export class InitiativeDisplayView extends ItemView {
     root: HTMLElement,
     combatants: VisibleCombatant[],
     definitions: ReturnType<typeof mapConditions>,
+    mode: 'dynamic' | 'active' | 'complete',
   ): void {
     const activeById = new Map<string, NonNullable<EntryToken['conditions']>[number]>();
     for (const combatant of combatants) {
@@ -222,15 +224,25 @@ export class InitiativeDisplayView extends ItemView {
         if (!activeById.has(condition.id)) activeById.set(condition.id, condition);
       }
     }
-    if (activeById.size === 0) return;
+    const displayConditions = mode === 'complete'
+      ? definitions.map((definition) => {
+        const parsedColor = Number.parseInt(definition.color.replace('#', ''), 16);
+        return {
+          id: definition.id,
+          name: definition.name,
+          color: Number.isNaN(parsedColor) ? 0x808080 : parsedColor,
+          glyph: conditionGlyph(definition),
+        };
+      })
+      : [...activeById.values()];
+    if (displayConditions.length === 0) return;
 
     const key = root.createDiv({
       cls: 'atlas-initiative-display__condition-key',
-      attr: { role: 'group', 'aria-label': 'Active condition key' },
+      attr: { role: 'group', 'aria-label': mode === 'complete' ? 'Complete condition list' : 'Active condition key' },
     });
     key.createDiv({ cls: 'atlas-initiative-display__condition-key-title', text: 'Conditions' });
-    for (const condition of activeById.values()) {
-      const definition = definitions.find(({ id }) => id === condition.id);
+    for (const condition of displayConditions) {
       const item = key.createDiv({ cls: 'atlas-initiative-display__condition-key-item' });
       const symbol = item.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol', attr: { 'aria-hidden': 'true' } });
       symbol.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
@@ -246,7 +258,7 @@ export class InitiativeDisplayView extends ItemView {
       } else {
         symbol.createSpan({ cls: 'atlas-initiative-display__condition-key-glyph', text: condition.glyph.text });
       }
-      item.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: definition?.name ?? condition.name });
+      item.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: condition.name });
     }
   }
 

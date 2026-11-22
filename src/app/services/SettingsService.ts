@@ -579,7 +579,9 @@ export class SettingsService {
 
   /** Which combatants contribute conditions to the Initiative Display's condition key. */
   getInitiativeDisplayConditionKeyMode(): InitiativeDisplayConditionKeyMode {
-    return this.settings.initiativeDisplayConditionKeyMode === 'full' ? 'full' : 'dynamic';
+    // `full` was the former name for listing all currently active conditions.
+    const stored = this.settings.initiativeDisplayConditionKeyMode;
+    return stored === 'complete' ? 'complete' : stored === 'active' || stored === 'full' ? 'active' : 'dynamic';
   }
 
   setInitiativeDisplayConditionKeyMode(mode: InitiativeDisplayConditionKeyMode): void {
