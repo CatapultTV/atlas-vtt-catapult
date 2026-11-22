@@ -44,6 +44,7 @@
   display: grid;
   /* The key can move to the bottom-right when its top position collides with the current portrait. */
   width: clamp(220px, 24vw, 380px);
+  height: clamp(110px, 30vh, 300px);
   max-height: clamp(110px, 30vh, 300px);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(var(--atlas-condition-key-rows, 6), auto);
