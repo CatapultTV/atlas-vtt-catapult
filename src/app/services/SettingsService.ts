@@ -9,7 +9,7 @@ import { isDiceDisplay, type DiceDisplay } from '../dice3d/diceDisplay';
 import type { ExperimentalFeatureId } from '../experimental/experimentalFeatures';
 import { DEFAULT_DICE_LOOK, isDiceColour, isDiceFont, type DiceLook } from '../dice3d/diceLook';
 import { isInitiativeDisplayFont, type InitiativeDisplayFont } from '../initiative-display-font';
-import type { InitiativeDisplayConditionKeyMode } from './atlasSettings';
+import type { InitiativeDisplayConditionKeyMode, InitiativeDisplayConditionKeyPosition } from './atlasSettings';
 import { readToolbarLayout, type StoredToolbarLayout } from '../toolbar/toolbarLayout';
 import {
   DEFAULT_SETTINGS,
@@ -587,6 +587,16 @@ export class SettingsService {
   setInitiativeDisplayConditionKeyMode(mode: InitiativeDisplayConditionKeyMode): void {
     if (this.getInitiativeDisplayConditionKeyMode() === mode) return;
     this.settings.initiativeDisplayConditionKeyMode = mode;
+    this.commit();
+  }
+
+  getInitiativeDisplayConditionKeyPosition(): InitiativeDisplayConditionKeyPosition {
+    return this.settings.initiativeDisplayConditionKeyPosition === 'bottom-right' ? 'bottom-right' : 'top-right';
+  }
+
+  setInitiativeDisplayConditionKeyPosition(position: InitiativeDisplayConditionKeyPosition): void {
+    if (this.getInitiativeDisplayConditionKeyPosition() === position) return;
+    this.settings.initiativeDisplayConditionKeyPosition = position;
     this.commit();
   }
 

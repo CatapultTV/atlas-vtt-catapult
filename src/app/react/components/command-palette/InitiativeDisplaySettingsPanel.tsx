@@ -3,7 +3,7 @@ import { SegmentedControl } from '../../../packages/components/primitives/Segmen
 import { useAtlasUI } from '../../root/AtlasUIContext';
 import { SettingsService } from '../../../services/SettingsService';
 import { INITIATIVE_DISPLAY_FONT_OPTIONS, type InitiativeDisplayFont } from '../../../initiative-display-font';
-import type { InitiativeDisplayConditionKeyMode } from '../../../services/atlasSettings';
+import type { InitiativeDisplayConditionKeyMode, InitiativeDisplayConditionKeyPosition } from '../../../services/atlasSettings';
 import { SettingChoiceRow } from './SettingRows';
 import { t } from '../../../i18n';
 
@@ -13,14 +13,17 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
   const settings = SettingsService.forApp(app ?? undefined);
   const [font, setFont] = useState<InitiativeDisplayFont>(() => settings?.getInitiativeDisplayFont() ?? 'default');
   const [conditionKeyMode, setConditionKeyMode] = useState<InitiativeDisplayConditionKeyMode>(() => settings?.getInitiativeDisplayConditionKeyMode() ?? 'dynamic');
+  const [conditionKeyPosition, setConditionKeyPosition] = useState<InitiativeDisplayConditionKeyPosition>(() => settings?.getInitiativeDisplayConditionKeyPosition() ?? 'top-right');
 
   useEffect(() => {
     if (!settings) return;
     setFont(settings.getInitiativeDisplayFont());
     setConditionKeyMode(settings.getInitiativeDisplayConditionKeyMode());
+    setConditionKeyPosition(settings.getInitiativeDisplayConditionKeyPosition());
     return settings.onChange(() => {
       setFont(settings.getInitiativeDisplayFont());
       setConditionKeyMode(settings.getInitiativeDisplayConditionKeyMode());
+      setConditionKeyPosition(settings.getInitiativeDisplayConditionKeyPosition());
     });
   }, [settings]);
 
@@ -60,6 +63,20 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
             ]}
             ariaLabel={t('palette.initiativeDisplayConditionKey')}
             onChange={(next) => settings?.setInitiativeDisplayConditionKeyMode(next)}
+          />
+        </SettingChoiceRow>
+        <SettingChoiceRow
+          label={t('palette.initiativeDisplayConditionKeyPosition')}
+          hint={t('palette.initiativeDisplayConditionKeyPositionHint')}
+        >
+          <SegmentedControl<InitiativeDisplayConditionKeyPosition>
+            value={conditionKeyPosition}
+            options={[
+              { value: 'top-right', label: t('palette.initiativeDisplayConditionKeyTopRight') },
+              { value: 'bottom-right', label: t('palette.initiativeDisplayConditionKeyBottomRight') },
+            ]}
+            ariaLabel={t('palette.initiativeDisplayConditionKeyPosition')}
+            onChange={(next) => settings?.setInitiativeDisplayConditionKeyPosition(next)}
           />
         </SettingChoiceRow>
       </div>

@@ -44,6 +44,7 @@ export class InitiativeDisplayView extends ItemView {
   private stopStore: (() => void) | null = null;
   private stopSettings: (() => void) | null = null;
   private reconnectQueued = false;
+  private keyResizeObserver: ResizeObserver | null = null;
   private readonly initiativeWindowService = new InitiativeWindowService();
 
   constructor(leaf: WorkspaceLeaf) {
@@ -146,6 +147,8 @@ export class InitiativeDisplayView extends ItemView {
 
   private render(state: ViewAtlasState): void {
     const container = this.contentEl;
+    this.keyResizeObserver?.disconnect();
+    this.keyResizeObserver = null;
     container.empty();
     const initiative = state.initiative;
     const root = container.createDiv({ cls: 'atlas-initiative-display' });
@@ -176,9 +179,12 @@ export class InitiativeDisplayView extends ItemView {
     const holders = turnEntries(currentTurn(initiative), initiative, tokens, defeated);
     const holderIds = new Set(holders.map((entry) => entry.id));
     const active = visible.filter(({ entry }) => holderIds.has(entry.id));
-    const conditionKeyMode = this.sourceView?.serviceManager.getSettingsService().getInitiativeDisplayConditionKeyMode() ?? 'dynamic';
+    const displaySettings = this.sourceView?.serviceManager.getSettingsService();
+    const conditionKeyMode = displaySettings?.getInitiativeDisplayConditionKeyMode() ?? 'dynamic';
+    const conditionKeyPosition = displaySettings?.getInitiativeDisplayConditionKeyPosition() ?? 'top-right';
     if (active.length === 0) {
       if (conditionKeyMode === 'complete') this.renderConditionKey(root, [], conditions, conditionKeyMode);
+      this.watchConditionKeyLayout(root, conditionKeyPosition);
       root.createDiv({ cls: 'atlas-initiative-display__empty', text: 'No visible combatant currently holds the turn' });
       root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
       return;
@@ -209,6 +215,7 @@ export class InitiativeDisplayView extends ItemView {
       nextPanel.createDiv({ cls: 'atlas-initiative-display__next-label', text: 'Next' });
       this.renderCombatant(nextPanel, next, definitions, mapShowsNameplates, playersSeeNames, false);
     }
+    this.watchConditionKeyLayout(root, conditionKeyPosition);
   }
 
   /** Shows a compact key for the conditions currently affecting player-visible combatants. */
@@ -242,8 +249,17 @@ export class InitiativeDisplayView extends ItemView {
       attr: { role: 'group', 'aria-label': mode === 'complete' ? 'Complete condition list' : 'Active condition key' },
     });
     key.createDiv({ cls: 'atlas-initiative-display__condition-key-title', text: 'Conditions' });
-    for (const condition of displayConditions) {
-      const item = key.createDiv({ cls: 'atlas-initiative-display__condition-key-item' });
+    const items: HTMLElement[] = [];
+    const appendItem = (condition: typeof displayConditions[number], overflow = false): HTMLElement => {
+      const item = key.createDiv({ cls: overflow
+        ? 'atlas-initiative-display__condition-key-item atlas-initiative-display__condition-key-overflow'
+        : 'atlas-initiative-display__condition-key-item' });
+      if (overflow) {
+        const symbol = item.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol atlas-initiative-display__condition-key-symbol--overflow' });
+        symbol.createSpan({ text: condition.name });
+        item.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: '' });
+        return item;
+      }
       const symbol = item.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol', attr: { 'aria-hidden': 'true' } });
       symbol.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
       symbol.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
@@ -259,6 +275,61 @@ export class InitiativeDisplayView extends ItemView {
         symbol.createSpan({ cls: 'atlas-initiative-display__condition-key-glyph', text: condition.glyph.text });
       }
       item.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: condition.name });
+      return item;
+    };
+    for (const condition of displayConditions) items.push(appendItem(condition));
+    // A ResizeObserver recalculates how many rows fit as the popout is resized.
+    key.dataset.conditionCount = String(displayConditions.length);
+    key.dataset.conditionItems = 'true';
+  }
+
+  /** Keep the key clear of the current portrait, and replace clipped entries with a +n item. */
+  private watchConditionKeyLayout(root: HTMLElement, position: 'top-right' | 'bottom-right'): void {
+    const update = (): void => {
+      const key = root.querySelector<HTMLElement>('.atlas-initiative-display__condition-key');
+      if (!key) return;
+      key.classList.toggle('atlas-initiative-display__condition-key--bottom', position === 'bottom-right');
+      if (position === 'top-right') {
+        const portrait = root.querySelector<HTMLElement>('.atlas-initiative-display__current .atlas-initiative-display__portrait');
+        if (portrait) {
+          const keyRect = key.getBoundingClientRect();
+          const portraitRect = portrait.getBoundingClientRect();
+          const badgeReach = Math.max(24, portraitRect.width * 0.13);
+          const overlaps = keyRect.left < portraitRect.right + badgeReach
+            && keyRect.right > portraitRect.left - badgeReach
+            && keyRect.top < portraitRect.bottom + badgeReach
+            && keyRect.bottom > portraitRect.top - badgeReach;
+          key.classList.toggle('atlas-initiative-display__condition-key--bottom', overlaps);
+        }
+      }
+      this.fitConditionKey(key);
+    };
+    update();
+    this.keyResizeObserver = new ResizeObserver(update);
+    this.keyResizeObserver.observe(root);
+  }
+
+  private fitConditionKey(key: HTMLElement): void {
+    const items = Array.from(key.querySelectorAll<HTMLElement>('.atlas-initiative-display__condition-key-item:not(.atlas-initiative-display__condition-key-overflow)'));
+    const title = key.querySelector<HTMLElement>('.atlas-initiative-display__condition-key-title');
+    if (!title || items.length === 0) return;
+    const style = getComputedStyle(key);
+    const padding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
+    const gap = Number.parseFloat(style.rowGap) || 0;
+    const itemHeight = items[0].getBoundingClientRect().height || 24;
+    const available = key.clientHeight - title.getBoundingClientRect().height - padding - gap;
+    const rows = Math.max(1, Math.floor((available + gap) / (itemHeight + gap)));
+    key.style.setProperty('--atlas-condition-key-rows', String(rows));
+    const capacity = rows * 2;
+    const overflowCount = Math.max(0, items.length - capacity);
+    const visibleCount = overflowCount > 0 ? Math.max(0, capacity - 1) : items.length;
+    items.forEach((item, index) => { item.style.display = index < visibleCount ? 'flex' : 'none'; });
+    key.querySelector('.atlas-initiative-display__condition-key-overflow')?.remove();
+    if (overflowCount > 0) {
+      const overflow = key.createDiv({ cls: 'atlas-initiative-display__condition-key-item atlas-initiative-display__condition-key-overflow' });
+      const symbol = overflow.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol atlas-initiative-display__condition-key-symbol--overflow' });
+      symbol.setText(`+${overflowCount}`);
+      overflow.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: 'more' });
     }
   }
 

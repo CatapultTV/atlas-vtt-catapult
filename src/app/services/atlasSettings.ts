@@ -30,6 +30,7 @@ export const TUTORIAL_IDS = ['dashboard', 'map', 'online', 'tableLog', 'assets',
 export type TutorialId = typeof TUTORIAL_IDS[number];
 
 export type InitiativeDisplayConditionKeyMode = 'dynamic' | 'active' | 'complete';
+export type InitiativeDisplayConditionKeyPosition = 'top-right' | 'bottom-right';
 
 export interface AtlasSettings {
   showChangelogOnUpdate: boolean;
@@ -69,6 +70,8 @@ export interface AtlasSettings {
   initiativeDisplayFont: InitiativeDisplayFont;
   /** Whether the Initiative Display lists conditions for the current side or every visible combatant. */
   initiativeDisplayConditionKeyMode: InitiativeDisplayConditionKeyMode;
+  /** Preferred corner for the Initiative Display condition key; top-right moves down automatically on collision. */
+  initiativeDisplayConditionKeyPosition: InitiativeDisplayConditionKeyPosition;
   /** Face of the dice numerals and roll totals. Read with `getDiceLook`. */
   diceFont: DiceFont;
   /** The GM's tracker is a compact list without portraits. Read with `showsCompactInitiative`. */
@@ -142,6 +145,7 @@ export const DEFAULT_SETTINGS: AtlasSettings = {
   diceFont: DEFAULT_DICE_LOOK.font,
   initiativeDisplayFont: 'default',
   initiativeDisplayConditionKeyMode: 'dynamic',
+  initiativeDisplayConditionKeyPosition: 'top-right',
   initiativeDock: 'right',
   initiativeBanner: true,
   initiativeMovesOnTurn: false,
