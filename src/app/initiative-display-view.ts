@@ -328,13 +328,27 @@ export class InitiativeDisplayView extends ItemView {
 
     // Match Atlas' "Combat has started" treatment: the heading resolves from a soft blur
     // while its letter spacing settles. Here it travels from screen centre to its resting top anchor.
-    round?.animate(
-      [
-        { opacity: 0, transform: 'translate(-50%, 42vh)', filter: 'blur(5px)', letterSpacing: '0.22em' },
-        { opacity: 1, transform: 'translate(-50%, 0)', filter: 'blur(0)', letterSpacing: '0.04em' },
-      ],
-      { duration: 900, easing: 'cubic-bezier(0.55, 0.06, 0.68, 0.19)', fill: 'both' },
-    );
+    if (round) {
+      const roundRect = round.getBoundingClientRect();
+      const rootRect = root.getBoundingClientRect();
+      const centerOffset = rootRect.top + (rootRect.height - roundRect.height) / 2 - roundRect.top;
+
+      // The title travels to its anchor with ease-in, while its type resolves like Atlas' fight-start title.
+      round.animate(
+        [
+          { transform: `translate(-50%, ${centerOffset}px)` },
+          { transform: 'translate(-50%, 0)' },
+        ],
+        { duration: 900, easing: 'ease-in', fill: 'both' },
+      );
+      round.animate(
+        [
+          { opacity: 0, filter: 'blur(8px)', letterSpacing: '0.32em' },
+          { opacity: 1, filter: 'blur(0)', letterSpacing: '0.04em' },
+        ],
+        { duration: 1000, delay: 80, easing: 'cubic-bezier(0.23, 1, 0.32, 1)', fill: 'both' },
+      );
+    }
 
     const currentStart = 900;
     current?.animate(
