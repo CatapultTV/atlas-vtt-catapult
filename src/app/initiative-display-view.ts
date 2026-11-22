@@ -305,7 +305,9 @@ export class InitiativeDisplayView extends ItemView {
     const rowGap = Number.parseFloat(style.rowGap) || 0;
     const itemHeight = Math.max(30, ...items.map((item) => item.getBoundingClientRect().height));
     const titleHeight = title.getBoundingClientRect().height;
-    // Use nearly all of the available display height. Do not impose an arbitrary\n    // 70vh ceiling: that caused +n even when a fullscreen popout had ample room.\n    let availableHeight = rootRect.height * 0.95;
+    // Use nearly all of the available display height. Do not impose an arbitrary
+    // 70vh ceiling: that caused +n even when a fullscreen popout had ample room.
+    let availableHeight = rootRect.height * 0.95;
 
     if (portrait) {
       const portraitRect = portrait.getBoundingClientRect();
