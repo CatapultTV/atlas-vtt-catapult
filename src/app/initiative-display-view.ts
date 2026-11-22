@@ -326,6 +326,7 @@ export class InitiativeDisplayView extends ItemView {
     const currentBadges = Array.from(root.querySelectorAll<HTMLElement>('.atlas-initiative-display__current [data-animation-key]'))
       .sort((a, b) => Number(a.dataset.conditionOrder) - Number(b.dataset.conditionOrder));
     const next = root.querySelector<HTMLElement>('.atlas-initiative-display__next .atlas-initiative-display__portrait');
+    const nextLabel = root.querySelector<HTMLElement>('.atlas-initiative-display__next-label');
     const key = root.querySelector<HTMLElement>('.atlas-initiative-display__condition-key');
     const hp = root.querySelector<HTMLElement>('.atlas-initiative-display__resource--hp');
 
@@ -385,7 +386,16 @@ export class InitiativeDisplayView extends ItemView {
     );
 
     const nextEnd = next ? nextStart + 500 : conditionsEnd;
-    const keyStart = nextEnd + 100;
+    nextLabel?.animate(
+      [
+        { opacity: 0, transform: 'translateY(8px)', filter: 'blur(3px)' },
+        { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
+      ],
+      { duration: 320, delay: nextEnd, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' },
+    );
+
+    const nextLabelEnd = nextLabel ? nextEnd + 320 : nextEnd;
+    const keyStart = nextLabelEnd + 100;
     key?.animate(
       [
         { opacity: 0, transform: 'scale(0.88) translateY(12px)', filter: 'blur(3px)' },
