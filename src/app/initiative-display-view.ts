@@ -178,7 +178,6 @@ export class InitiativeDisplayView extends ItemView {
     const active = visible.filter(({ entry }) => holderIds.has(entry.id));
     if (active.length === 0) {
       root.createDiv({ cls: 'atlas-initiative-display__empty', text: 'No visible combatant currently holds the turn' });
-      this.renderConditionKey(root, visible, conditions);
       root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
       return;
     }
@@ -190,7 +189,13 @@ export class InitiativeDisplayView extends ItemView {
     const playersSeeNames = settings?.showTokenNameplates ?? false;
     const mapShowsNameplates = state.tokenSettings?.showNameplates ?? false;
 
-    this.renderConditionKey(root, visible, conditions);
+    // On a player character's turn, show the conditions affecting the player party.
+    // On an enemy's turn, show only that enemy's conditions; listing every enemy's
+    // conditions would add noise when the party is waiting to act.
+    const conditionSubjects = current.entry.isNPC
+      ? [current]
+      : visible.filter(({ entry }) => !entry.isNPC);
+    this.renderConditionKey(root, conditionSubjects, conditions);
     root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
     const stage = root.createDiv({ cls: 'atlas-initiative-display__stage' });
     const currentPanel = stage.createDiv({ cls: 'atlas-initiative-display__current' });
