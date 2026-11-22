@@ -273,7 +273,7 @@ export class InitiativeDisplayView extends ItemView {
     // A ResizeObserver recalculates how many rows fit as the popout is resized.
   }
 
-  /** Keep the condition key in the exact position selected in Initiative Display settings. */
+  /** Keep the key in its selected corner while reserving space before the combatant. */
   private watchConditionKeyLayout(root: HTMLElement, position: 'top-left' | 'top-right' | 'bottom-left'): void {
     const key = root.querySelector<HTMLElement>('.atlas-initiative-display__condition-key');
     if (!key) return;
@@ -283,22 +283,55 @@ export class InitiativeDisplayView extends ItemView {
       'atlas-initiative-display__condition-key--bottom-left',
     );
     key.classList.add(`atlas-initiative-display__condition-key--${position}`);
-    this.fitConditionKey(key);
-    this.keyResizeObserver = new ResizeObserver(() => this.fitConditionKey(key));
+    this.fitConditionKey(key, root, position);
+    this.keyResizeObserver = new ResizeObserver(() => this.fitConditionKey(key, root, position));
     this.keyResizeObserver.observe(root);
   }
 
-  private fitConditionKey(key: HTMLElement): void {
+  /** Fits actual rows to the free space and counts every condition hidden by the limit. */
+  private fitConditionKey(
+    key: HTMLElement,
+    root: HTMLElement,
+    position: 'top-left' | 'top-right' | 'bottom-left',
+  ): void {
     const items = Array.from(key.querySelectorAll<HTMLElement>('.atlas-initiative-display__condition-key-item:not(.atlas-initiative-display__condition-key-overflow)'));
     const title = key.querySelector<HTMLElement>('.atlas-initiative-display__condition-key-title');
     if (!title || items.length === 0) return;
-    const style = getComputedStyle(key);
-    const padding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
-    const gap = Number.parseFloat(style.rowGap) || 0;
-    const itemHeight = items[0].getBoundingClientRect().height || 24;
-    const available = key.clientHeight - title.getBoundingClientRect().height - padding - gap;
-    const rows = Math.max(1, Math.floor((available + gap) / (itemHeight + gap)));
+
+    const portrait = root.querySelector<HTMLElement>('.atlas-initiative-display__current .atlas-initiative-display__portrait');
+    const rootRect = root.getBoundingClientRect();
+    const keyStyle = getComputedStyle(key);
+    const padding = Number.parseFloat(keyStyle.paddingTop) + Number.parseFloat(keyStyle.paddingBottom);
+    const gap = Number.parseFloat(keyStyle.rowGap) || 0;
+    const itemHeight = items[0].getBoundingClientRect().height || 30;
+    const titleHeight = title.getBoundingClientRect().height;
+    const maxHeight = Math.min(
+      rootRect.height * 0.85,
+      window.innerWidth <= 620 ? rootRect.height * 0.28 : rootRect.height * 0.7,
+    );
+    let availableHeight = maxHeight;
+
+    if (portrait) {
+      const portraitRect = portrait.getBoundingClientRect();
+      const badgeClearance = Math.max(26, portraitRect.width * 0.15);
+      const keyRect = key.getBoundingClientRect();
+      const horizontalOverlap = keyRect.left < portraitRect.right + badgeClearance
+        && keyRect.right > portraitRect.left - badgeClearance;
+      if (horizontalOverlap) {
+        if (position === 'top-left' || position === 'top-right') {
+          availableHeight = Math.min(availableHeight, portraitRect.top - keyRect.top - badgeClearance);
+        } else {
+          availableHeight = Math.min(availableHeight, rootRect.bottom - keyRect.bottom - Math.max(8, badgeClearance * 0.25));
+        }
+      }
+    }
+
+    const usableHeight = Math.max(itemHeight + titleHeight + padding, availableHeight);
+    const rows = Math.max(1, Math.floor((usableHeight - titleHeight - padding + gap) / (itemHeight + gap)));
     key.style.setProperty('--atlas-condition-key-rows', String(rows));
+    key.style.maxHeight = `${Math.max(itemHeight + titleHeight + padding, usableHeight)}px`;
+
+    // The final slot is reserved for +n only when at least one condition is hidden.
     const capacity = rows * 2;
     const overflowCount = Math.max(0, items.length - capacity);
     const visibleCount = overflowCount > 0 ? Math.max(0, capacity - 1) : items.length;
