@@ -3,6 +3,7 @@ import { SegmentedControl } from '../../../packages/components/primitives/Segmen
 import { useAtlasUI } from '../../root/AtlasUIContext';
 import { SettingsService } from '../../../services/SettingsService';
 import { INITIATIVE_DISPLAY_FONT_OPTIONS, type InitiativeDisplayFont } from '../../../initiative-display-font';
+import type { InitiativeDisplayConditionKeyMode } from '../../../services/atlasSettings';
 import { SettingChoiceRow } from './SettingRows';
 import { t } from '../../../i18n';
 
@@ -11,11 +12,16 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
   const { app } = useAtlasUI();
   const settings = SettingsService.forApp(app ?? undefined);
   const [font, setFont] = useState<InitiativeDisplayFont>(() => settings?.getInitiativeDisplayFont() ?? 'default');
+  const [conditionKeyMode, setConditionKeyMode] = useState<InitiativeDisplayConditionKeyMode>(() => settings?.getInitiativeDisplayConditionKeyMode() ?? 'dynamic');
 
   useEffect(() => {
     if (!settings) return;
     setFont(settings.getInitiativeDisplayFont());
-    return settings.onChange(() => setFont(settings.getInitiativeDisplayFont()));
+    setConditionKeyMode(settings.getInitiativeDisplayConditionKeyMode());
+    return settings.onChange(() => {
+      setFont(settings.getInitiativeDisplayFont());
+      setConditionKeyMode(settings.getInitiativeDisplayConditionKeyMode());
+    });
   }, [settings]);
 
   const options = INITIATIVE_DISPLAY_FONT_OPTIONS.map((option) => ({
@@ -39,6 +45,20 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
             options={options}
             ariaLabel={t('palette.initiativeDisplayFont')}
             onChange={(next) => settings?.setInitiativeDisplayFont(next)}
+          />
+        </SettingChoiceRow>
+        <SettingChoiceRow
+          label={t('palette.initiativeDisplayConditionKey')}
+          hint={t('palette.initiativeDisplayConditionKeyHint')}
+        >
+          <SegmentedControl<InitiativeDisplayConditionKeyMode>
+            value={conditionKeyMode}
+            options={[
+              { value: 'dynamic', label: t('palette.initiativeDisplayConditionKeyDynamic') },
+              { value: 'full', label: t('palette.initiativeDisplayConditionKeyFull') },
+            ]}
+            ariaLabel={t('palette.initiativeDisplayConditionKey')}
+            onChange={(next) => settings?.setInitiativeDisplayConditionKeyMode(next)}
           />
         </SettingChoiceRow>
       </div>

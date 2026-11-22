@@ -29,6 +29,8 @@ export interface NavigationSettings {
 export const TUTORIAL_IDS = ['dashboard', 'map', 'online', 'tableLog', 'assets', 'palette', 'tokenStatblocks', 'lootSettings', 'lootRoller', 'lootResults', 'savedRolls'] as const;
 export type TutorialId = typeof TUTORIAL_IDS[number];
 
+export type InitiativeDisplayConditionKeyMode = 'dynamic' | 'full';
+
 export interface AtlasSettings {
   showChangelogOnUpdate: boolean;
   changelogMajorUpdatesOnly: boolean;
@@ -65,6 +67,8 @@ export interface AtlasSettings {
   diceColour: DiceColour;
   /** Typeface used by every text element in the standalone Initiative Display. */
   initiativeDisplayFont: InitiativeDisplayFont;
+  /** Whether the Initiative Display lists conditions for the current side or every visible combatant. */
+  initiativeDisplayConditionKeyMode: InitiativeDisplayConditionKeyMode;
   /** Face of the dice numerals and roll totals. Read with `getDiceLook`. */
   diceFont: DiceFont;
   /** The GM's tracker is a compact list without portraits. Read with `showsCompactInitiative`. */
@@ -137,6 +141,7 @@ export const DEFAULT_SETTINGS: AtlasSettings = {
   diceColour: DEFAULT_DICE_LOOK.colour,
   diceFont: DEFAULT_DICE_LOOK.font,
   initiativeDisplayFont: 'default',
+  initiativeDisplayConditionKeyMode: 'dynamic',
   initiativeDock: 'right',
   initiativeBanner: true,
   initiativeMovesOnTurn: false,

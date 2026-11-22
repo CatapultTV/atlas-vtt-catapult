@@ -192,9 +192,12 @@ export class InitiativeDisplayView extends ItemView {
     // On a player character's turn, show the conditions affecting the player party.
     // On an enemy's turn, show only that enemy's conditions; listing every enemy's
     // conditions would add noise when the party is waiting to act.
-    const conditionSubjects = current.entry.isNPC
-      ? [current]
-      : visible.filter(({ entry }) => !entry.isNPC);
+    const conditionKeyMode = this.sourceView?.serviceManager.getSettingsService().getInitiativeDisplayConditionKeyMode() ?? 'dynamic';
+    const conditionSubjects = conditionKeyMode === 'full'
+      ? visible
+      : current.entry.isNPC
+        ? [current]
+        : visible.filter(({ entry }) => !entry.isNPC);
     this.renderConditionKey(root, conditionSubjects, conditions);
     root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
     const stage = root.createDiv({ cls: 'atlas-initiative-display__stage' });
