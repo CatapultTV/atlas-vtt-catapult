@@ -288,7 +288,7 @@ export class InitiativeDisplayView extends ItemView {
     this.keyResizeObserver.observe(root);
   }
 
-  /** Fits actual rows to the free space and counts every condition hidden by the limit. */
+  /** Fits a two-column key to its visible items and the space clear of the portrait. */
   private fitConditionKey(
     key: HTMLElement,
     root: HTMLElement,
@@ -300,50 +300,49 @@ export class InitiativeDisplayView extends ItemView {
 
     const portrait = root.querySelector<HTMLElement>('.atlas-initiative-display__current .atlas-initiative-display__portrait');
     const rootRect = root.getBoundingClientRect();
-    const keyStyle = getComputedStyle(key);
-    const padding = Number.parseFloat(keyStyle.paddingTop) + Number.parseFloat(keyStyle.paddingBottom);
-    const gap = Number.parseFloat(keyStyle.rowGap) || 0;
+    const style = getComputedStyle(key);
+    const padding = (Number.parseFloat(style.paddingTop) || 0) + (Number.parseFloat(style.paddingBottom) || 0);
+    const rowGap = Number.parseFloat(style.rowGap) || 0;
     const itemHeight = items[0].getBoundingClientRect().height || 30;
     const titleHeight = title.getBoundingClientRect().height;
-    const maxHeight = Math.min(
-      rootRect.height * 0.85,
-      window.innerWidth <= 620 ? rootRect.height * 0.28 : rootRect.height * 0.7,
-    );
-    let availableHeight = maxHeight;
+    let availableHeight = Math.min(rootRect.height * 0.85, window.innerWidth <= 620 ? rootRect.height * 0.28 : rootRect.height * 0.7);
 
     if (portrait) {
       const portraitRect = portrait.getBoundingClientRect();
-      const badgeClearance = Math.max(26, portraitRect.width * 0.15);
       const keyRect = key.getBoundingClientRect();
-      const horizontalOverlap = keyRect.left < portraitRect.right + badgeClearance
-        && keyRect.right > portraitRect.left - badgeClearance;
-      if (horizontalOverlap) {
-        if (position === 'top-left' || position === 'top-right') {
-          availableHeight = Math.min(availableHeight, portraitRect.top - keyRect.top - badgeClearance);
-        } else {
-          availableHeight = Math.min(availableHeight, rootRect.bottom - portraitRect.bottom - Math.max(8, badgeClearance * 0.25));
-        }
+      const clearance = Math.max(26, portraitRect.width * 0.15);
+      const overlapsHorizontally = keyRect.left < portraitRect.right + clearance
+        && keyRect.right > portraitRect.left - clearance;
+      if (overlapsHorizontally && (position === 'top-left' || position === 'top-right')) {
+        availableHeight = Math.min(availableHeight, portraitRect.top - keyRect.top - clearance);
+      } else if (overlapsHorizontally && position === 'bottom-left') {
+        availableHeight = Math.min(availableHeight, rootRect.bottom - portraitRect.bottom - clearance);
       }
     }
 
-    const usableHeight = Math.max(itemHeight + titleHeight + padding, availableHeight);
-    const rows = Math.max(1, Math.floor((usableHeight - titleHeight - padding + gap) / (itemHeight + gap)));
-    key.style.setProperty('--atlas-condition-key-rows', String(rows));
-    key.style.maxHeight = `${Math.max(itemHeight + titleHeight + padding, usableHeight)}px`;
+    // Count how many complete rows fit, then reserve one cell for +n only if needed.
+    const rowHeight = itemHeight + rowGap;
+    const maxRows = Math.max(1, Math.floor((Math.max(0, availableHeight - titleHeight - padding) + rowGap) / rowHeight));
+    const maxCells = Math.min(maxRows * 2, 12);
+    const overflowNeeded = items.length > Math.min(11, maxCells);
+    const visibleCount = overflowNeeded ? Math.max(0, maxCells - 1) : items.length;
+    const hiddenCount = items.length - visibleCount;
 
-    // The final slot is reserved for +n only when at least one condition is hidden.
-    const capacity = Math.min(rows * 2, 12);
-    const needsOverflow = items.length > Math.min(11, capacity);
-    const visibleCount = needsOverflow ? Math.max(0, Math.min(items.length, capacity - 1)) : items.length;
-    const overflowCount = items.length - visibleCount;
     items.forEach((item, index) => { item.style.display = index < visibleCount ? 'flex' : 'none'; });
     key.querySelector('.atlas-initiative-display__condition-key-overflow')?.remove();
-    if (overflowCount > 0) {
+    if (hiddenCount > 0) {
       const overflow = key.createDiv({ cls: 'atlas-initiative-display__condition-key-item atlas-initiative-display__condition-key-overflow' });
       const symbol = overflow.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol atlas-initiative-display__condition-key-symbol--overflow' });
-      symbol.setText(`+${overflowCount}`);
+      symbol.setText(`+${hiddenCount}`);
       overflow.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: 'more' });
     }
+
+    // Grid rows are based on the items actually rendered, not the available maximum.
+    const renderedCells = visibleCount + (hiddenCount > 0 ? 1 : 0);
+    const actualRows = Math.max(1, Math.ceil(renderedCells / 2));
+    key.style.setProperty('--atlas-condition-key-rows', String(actualRows));
+    key.style.height = 'auto';
+    key.style.maxHeight = 'none';
   }
 
   private renderCombatant(

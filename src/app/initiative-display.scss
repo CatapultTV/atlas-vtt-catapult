@@ -457,6 +457,8 @@
 @media (max-width: 620px) {
   .atlas-initiative-display__condition-key {
     width: clamp(160px, 36vw, 240px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: column;
     height: auto;
     max-height: 28vh;
     gap: 0.3rem;
