@@ -321,7 +321,7 @@ export class InitiativeDisplayView extends ItemView {
         if (position === 'top-left' || position === 'top-right') {
           availableHeight = Math.min(availableHeight, portraitRect.top - keyRect.top - badgeClearance);
         } else {
-          availableHeight = Math.min(availableHeight, rootRect.bottom - keyRect.bottom - Math.max(8, badgeClearance * 0.25));
+          availableHeight = Math.min(availableHeight, rootRect.bottom - portraitRect.bottom - Math.max(8, badgeClearance * 0.25));
         }
       }
     }
