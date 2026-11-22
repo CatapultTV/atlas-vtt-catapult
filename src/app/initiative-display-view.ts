@@ -252,9 +252,7 @@ export class InitiativeDisplayView extends ItemView {
     });
     key.createDiv({ cls: 'atlas-initiative-display__condition-key-title', text: 'Conditions' });
     const appendItem = (condition: typeof displayConditions[number]): void => {
-      const item = key.createDiv({ cls: overflow
-        ? 'atlas-initiative-display__condition-key-item atlas-initiative-display__condition-key-overflow'
-        : 'atlas-initiative-display__condition-key-item' });
+      const item = key.createDiv({ cls: 'atlas-initiative-display__condition-key-item' });
       const symbol = item.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol', attr: { 'aria-hidden': 'true' } });
       symbol.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
       symbol.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
