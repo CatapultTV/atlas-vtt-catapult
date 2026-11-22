@@ -332,9 +332,10 @@ export class InitiativeDisplayView extends ItemView {
     key.style.maxHeight = `${Math.max(itemHeight + titleHeight + padding, usableHeight)}px`;
 
     // The final slot is reserved for +n only when at least one condition is hidden.
-    const capacity = rows * 2;
-    const overflowCount = Math.max(0, items.length - capacity);
-    const visibleCount = overflowCount > 0 ? Math.max(0, capacity - 1) : items.length;
+    const capacity = Math.min(rows * 2, 12);
+    const needsOverflow = items.length > Math.min(11, capacity);
+    const visibleCount = needsOverflow ? Math.max(0, Math.min(items.length, capacity - 1)) : items.length;
+    const overflowCount = items.length - visibleCount;
     items.forEach((item, index) => { item.style.display = index < visibleCount ? 'flex' : 'none'; });
     key.querySelector('.atlas-initiative-display__condition-key-overflow')?.remove();
     if (overflowCount > 0) {
