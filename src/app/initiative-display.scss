@@ -44,7 +44,7 @@
   display: grid;
   /* Keep the key in the outer-right area so it cannot reach the centred
      round label or the current combatant's upper-right condition badges. */
-  width: clamp(170px, 23vw, 320px);
+  width: clamp(220px, 24vw, 380px);
   max-height: clamp(110px, 30vh, 300px);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
@@ -62,7 +62,7 @@
 .atlas-initiative-display__condition-key-title {
   grid-column: 1 / -1;
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 750;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -77,9 +77,9 @@
 
 .atlas-initiative-display__condition-key-symbol {
   display: grid;
-  width: clamp(16px, 2vw, 24px);
-  height: clamp(16px, 2vw, 24px);
-  flex: 0 0 clamp(16px, 2vw, 24px);
+  width: clamp(22px, 2.2vw, 30px);
+  height: clamp(22px, 2.2vw, 30px);
+  flex: 0 0 clamp(22px, 2.2vw, 30px);
   place-items: center;
   border: 1.5px solid #0b0b0e;
   border-radius: 50%;
@@ -94,7 +94,7 @@
 
 .atlas-initiative-display__condition-key-glyph {
   color: var(--atlas-condition-glyph-color, #fff);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -102,7 +102,7 @@
 .atlas-initiative-display__condition-key-name {
   min-width: 0;
   color: var(--text-normal);
-  font-size: clamp(0.62rem, 0.85vw, 0.82rem);
+  font-size: clamp(0.8rem, 1vw, 1rem);
   font-weight: 600;
   overflow-wrap: anywhere;
 }
