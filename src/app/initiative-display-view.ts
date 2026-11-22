@@ -196,6 +196,8 @@ export class InitiativeDisplayView extends ItemView {
     const displaySettings = this.sourceView?.serviceManager.getSettingsService();
     const conditionKeyMode = displaySettings?.getInitiativeDisplayConditionKeyMode() ?? 'dynamic';
     const conditionKeyPosition = displaySettings?.getInitiativeDisplayConditionKeyPosition() ?? 'top-right';
+    const showHpBar = displaySettings?.showsInitiativeDisplayHpBar() ?? true;
+    const showHpValue = displaySettings?.showsInitiativeDisplayHpValue() ?? true;
     if (active.length === 0) {
       if (conditionKeyMode === 'complete') this.renderConditionKey(root, [], conditions, conditionKeyMode);
       this.watchConditionKeyLayout(root, conditionKeyPosition);
@@ -222,15 +224,15 @@ export class InitiativeDisplayView extends ItemView {
       : current.entry.isNPC
         ? [current]
         : visible.filter(({ entry }) => !entry.isNPC);
-    this.renderConditionKey(root, conditionSubjects, conditions, conditionKeyMode);
+    if (conditionKeyMode !== 'off') this.renderConditionKey(root, conditionSubjects, conditions, conditionKeyMode);
     root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
     const stage = root.createDiv({ cls: 'atlas-initiative-display__stage' });
     const currentPanel = stage.createDiv({ cls: 'atlas-initiative-display__current' });
-    this.renderCombatant(currentPanel, current, definitions, mapShowsNameplates, playersSeeNames, true);
+    this.renderCombatant(currentPanel, current, definitions, mapShowsNameplates, playersSeeNames, true, showHpBar, showHpValue);
     if (next && next.entry.id !== current.entry.id) {
       const nextPanel = stage.createDiv({ cls: 'atlas-initiative-display__next' });
       nextPanel.createDiv({ cls: 'atlas-initiative-display__next-label', text: 'Next' });
-      this.renderCombatant(nextPanel, next, definitions, mapShowsNameplates, playersSeeNames, false);
+      this.renderCombatant(nextPanel, next, definitions, mapShowsNameplates, playersSeeNames, false, showHpBar, showHpValue);
     }
     this.watchConditionKeyLayout(root, conditionKeyPosition);
     if (playStartup) {
@@ -590,6 +592,8 @@ export class InitiativeDisplayView extends ItemView {
     mapShowsNameplates: boolean,
     playersSeeNames: boolean,
     current: boolean,
+    showHpBar: boolean,
+    showHpValue: boolean,
   ): void {
     const { entry, token } = combatant;
     const card = parent.createDiv({ cls: current ? 'atlas-initiative-display__combatant atlas-initiative-display__combatant--current' : 'atlas-initiative-display__combatant atlas-initiative-display__combatant--next' });
@@ -609,11 +613,11 @@ export class InitiativeDisplayView extends ItemView {
     if (name) card.createDiv({ cls: 'atlas-initiative-display__name', text: name });
 
     if (current) {
-      const resources = token ? visibleResources(token, definitions, 'player') : [];
+      const resources = token ? visibleResources(token, definitions, 'player').filter(({ definition }) => showHpBar || definition.key !== 'hp') : [];
       // Atlas' player initiative list treats HP separately from ordinary resources. Mirror its
       // explicit visibility rule and use the player-safe HP value supplied by playersEntryToken.
       const hpDefinition = definitions.find((definition) => definition.key === 'hp' && definition.visibleToPlayers);
-      if (hpDefinition && combatant.playerToken.hp && !resources.some(({ definition }) => definition.key === 'hp')) {
+      if (showHpBar && hpDefinition && combatant.playerToken.hp && !resources.some(({ definition }) => definition.key === 'hp')) {
         resources.unshift({ definition: hpDefinition, value: combatant.playerToken.hp, slot: -1 });
       }
       if (resources.length > 0) {
@@ -641,7 +645,7 @@ export class InitiativeDisplayView extends ItemView {
             });
             const fill = track.createDiv({ cls: 'atlas-initiative-display__resource-fill' });
             fill.style.width = `${value.max > 0 ? Math.max(0, Math.min(100, (value.current / value.max) * 100)) : 0}%`;
-            track.createDiv({ cls: 'atlas-initiative-display__hp-value', text: `${value.current} / ${value.max}` });
+            if (showHpValue) track.createDiv({ cls: 'atlas-initiative-display__hp-value', text: `${value.current} / ${value.max}` });
           } else {
             resource.createDiv({ cls: 'atlas-initiative-display__resource-heading' }, (heading) => {
               heading.createDiv({ cls: 'atlas-initiative-display__resource-name', text: definition.name });
