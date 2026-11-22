@@ -178,7 +178,9 @@ export class InitiativeDisplayView extends ItemView {
     const active = visible.filter(({ entry }) => holderIds.has(entry.id));
     if (active.length === 0) {
       root.createDiv({ cls: 'atlas-initiative-display__empty', text: 'No visible combatant currently holds the turn' });
-      root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
+      this.renderConditionKey(root, visible, conditions);
+
+    root.createDiv({ cls: 'atlas-initiative-display__round', text: t('playerInit.round', { round: initiative.round }) });
       return;
     }
 
@@ -197,6 +199,46 @@ export class InitiativeDisplayView extends ItemView {
       const nextPanel = stage.createDiv({ cls: 'atlas-initiative-display__next' });
       nextPanel.createDiv({ cls: 'atlas-initiative-display__next-label', text: 'Next' });
       this.renderCombatant(nextPanel, next, definitions, mapShowsNameplates, playersSeeNames, false);
+    }
+  }
+
+  /** Shows a compact key for the conditions currently affecting player-visible combatants. */
+  private renderConditionKey(
+    root: HTMLElement,
+    combatants: VisibleCombatant[],
+    definitions: ReturnType<typeof mapConditions>,
+  ): void {
+    const activeById = new Map<string, NonNullable<EntryToken['conditions']>[number]>();
+    for (const combatant of combatants) {
+      for (const condition of combatant.playerToken.conditions ?? []) {
+        if (!activeById.has(condition.id)) activeById.set(condition.id, condition);
+      }
+    }
+    if (activeById.size === 0) return;
+
+    const key = root.createDiv({
+      cls: 'atlas-initiative-display__condition-key',
+      attr: { role: 'group', 'aria-label': 'Active condition key' },
+    });
+    key.createDiv({ cls: 'atlas-initiative-display__condition-key-title', text: 'Conditions' });
+    for (const condition of activeById.values()) {
+      const definition = definitions.find(({ id }) => id === condition.id);
+      const item = key.createDiv({ cls: 'atlas-initiative-display__condition-key-item' });
+      const symbol = item.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol', attr: { 'aria-hidden': 'true' } });
+      symbol.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
+      symbol.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
+      if (condition.glyph.kind === 'icon') {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 512 512');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', WIDGET_ICON_PATHS[condition.glyph.icon]);
+        path.setAttribute('fill', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
+        svg.append(path);
+        symbol.append(svg);
+      } else {
+        symbol.createSpan({ cls: 'atlas-initiative-display__condition-key-glyph', text: condition.glyph.text });
+      }
+      item.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: definition?.name ?? condition.name });
     }
   }
 
