@@ -232,7 +232,6 @@ export class InitiativeDisplayView extends ItemView {
       this.startupPending = false;
       this.playStartupAnimations(root);
     } else this.playContinuousAnimations(root, previousAnimationState);
-    else this.playContinuousAnimations(root, previousAnimationState);
   }
 
   /** Shows a compact key for the conditions currently affecting player-visible combatants. */
