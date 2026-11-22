@@ -581,7 +581,7 @@ export class SettingsService {
   getInitiativeDisplayConditionKeyMode(): InitiativeDisplayConditionKeyMode {
     // `full` was the former name for listing all currently active conditions.
     const stored = this.settings.initiativeDisplayConditionKeyMode;
-    return stored === 'complete' ? 'complete' : stored === 'active' || stored === 'full' ? 'active' : 'dynamic';
+    return stored === 'off' || stored === 'complete' ? stored : stored === 'active' || stored === 'full' ? 'active' : 'dynamic';
   }
 
   setInitiativeDisplayConditionKeyMode(mode: InitiativeDisplayConditionKeyMode): void {
@@ -598,6 +598,28 @@ export class SettingsService {
   setInitiativeDisplayConditionKeyPosition(position: InitiativeDisplayConditionKeyPosition): void {
     if (this.getInitiativeDisplayConditionKeyPosition() === position) return;
     this.settings.initiativeDisplayConditionKeyPosition = position;
+    this.commit();
+  }
+
+  /** Whether the Initiative Display shows HP at all, subject to the map's player visibility rules. */
+  showsInitiativeDisplayHpBar(): boolean {
+    return this.settings.initiativeDisplayShowHpBar !== false;
+  }
+
+  setInitiativeDisplayShowHpBar(shown: boolean): void {
+    if (this.showsInitiativeDisplayHpBar() === shown) return;
+    this.settings.initiativeDisplayShowHpBar = shown;
+    this.commit();
+  }
+
+  /** Whether exact current and maximum HP are printed inside the Initiative Display's bar. */
+  showsInitiativeDisplayHpValue(): boolean {
+    return this.settings.initiativeDisplayShowHpValue !== false;
+  }
+
+  setInitiativeDisplayShowHpValue(shown: boolean): void {
+    if (this.showsInitiativeDisplayHpValue() === shown) return;
+    this.settings.initiativeDisplayShowHpValue = shown;
     this.commit();
   }
 

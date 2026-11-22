@@ -4,7 +4,7 @@ import { useAtlasUI } from '../../root/AtlasUIContext';
 import { SettingsService } from '../../../services/SettingsService';
 import { INITIATIVE_DISPLAY_FONT_OPTIONS, type InitiativeDisplayFont } from '../../../initiative-display-font';
 import type { InitiativeDisplayConditionKeyMode, InitiativeDisplayConditionKeyPosition } from '../../../services/atlasSettings';
-import { SettingChoiceRow } from './SettingRows';
+import { SettingChoiceRow, SettingToggleRow } from './SettingRows';
 import { t } from '../../../i18n';
 
 /** Typeface for every label, name and resource value in the standalone Initiative Display. */
@@ -14,16 +14,22 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
   const [font, setFont] = useState<InitiativeDisplayFont>(() => settings?.getInitiativeDisplayFont() ?? 'default');
   const [conditionKeyMode, setConditionKeyMode] = useState<InitiativeDisplayConditionKeyMode>(() => settings?.getInitiativeDisplayConditionKeyMode() ?? 'dynamic');
   const [conditionKeyPosition, setConditionKeyPosition] = useState<InitiativeDisplayConditionKeyPosition>(() => settings?.getInitiativeDisplayConditionKeyPosition() ?? 'top-right');
+  const [showHpBar, setShowHpBar] = useState(() => settings?.showsInitiativeDisplayHpBar() ?? true);
+  const [showHpValue, setShowHpValue] = useState(() => settings?.showsInitiativeDisplayHpValue() ?? true);
 
   useEffect(() => {
     if (!settings) return;
     setFont(settings.getInitiativeDisplayFont());
     setConditionKeyMode(settings.getInitiativeDisplayConditionKeyMode());
     setConditionKeyPosition(settings.getInitiativeDisplayConditionKeyPosition());
+    setShowHpBar(settings.showsInitiativeDisplayHpBar());
+    setShowHpValue(settings.showsInitiativeDisplayHpValue());
     return settings.onChange(() => {
       setFont(settings.getInitiativeDisplayFont());
       setConditionKeyMode(settings.getInitiativeDisplayConditionKeyMode());
       setConditionKeyPosition(settings.getInitiativeDisplayConditionKeyPosition());
+      setShowHpBar(settings.showsInitiativeDisplayHpBar());
+      setShowHpValue(settings.showsInitiativeDisplayHpValue());
     });
   }, [settings]);
 
@@ -57,6 +63,7 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
           <SegmentedControl<InitiativeDisplayConditionKeyMode>
             value={conditionKeyMode}
             options={[
+              { value: 'off', label: t('palette.initiativeDisplayConditionKeyOff') },
               { value: 'dynamic', label: t('palette.initiativeDisplayConditionKeyDynamic') },
               { value: 'active', label: t('palette.initiativeDisplayConditionKeyActive') },
               { value: 'complete', label: t('palette.initiativeDisplayConditionKeyComplete') },
@@ -80,6 +87,19 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
             onChange={(next) => settings?.setInitiativeDisplayConditionKeyPosition(next)}
           />
         </SettingChoiceRow>
+        <SettingToggleRow
+          label={t('palette.initiativeDisplayShowHpBar')}
+          hint={t('palette.initiativeDisplayShowHpBarHint')}
+          value={showHpBar}
+          onToggle={() => settings?.setInitiativeDisplayShowHpBar(!showHpBar)}
+        />
+        <SettingToggleRow
+          label={t('palette.initiativeDisplayShowHpValue')}
+          hint={t('palette.initiativeDisplayShowHpValueHint')}
+          value={showHpValue}
+          disabled={!showHpBar}
+          onToggle={() => settings?.setInitiativeDisplayShowHpValue(!showHpValue)}
+        />
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ export interface NavigationSettings {
 export const TUTORIAL_IDS = ['dashboard', 'map', 'online', 'tableLog', 'assets', 'palette', 'tokenStatblocks', 'lootSettings', 'lootRoller', 'lootResults', 'savedRolls'] as const;
 export type TutorialId = typeof TUTORIAL_IDS[number];
 
-export type InitiativeDisplayConditionKeyMode = 'dynamic' | 'active' | 'complete';
+export type InitiativeDisplayConditionKeyMode = 'off' | 'dynamic' | 'active' | 'complete';
 export type InitiativeDisplayConditionKeyPosition = 'top-left' | 'top-right' | 'bottom-left';
 
 export interface AtlasSettings {
@@ -70,8 +70,12 @@ export interface AtlasSettings {
   initiativeDisplayFont: InitiativeDisplayFont;
   /** Whether the Initiative Display lists conditions for the current side or every visible combatant. */
   initiativeDisplayConditionKeyMode: InitiativeDisplayConditionKeyMode;
-  /** Preferred corner for the Initiative Display condition key; top-right moves down automatically on collision. */
+  /** Preferred corner for the Initiative Display condition key. */
   initiativeDisplayConditionKeyPosition: InitiativeDisplayConditionKeyPosition;
+  /** Whether the Initiative Display shows the HP bar when Atlas allows players to see HP. */
+  initiativeDisplayShowHpBar: boolean;
+  /** Whether the Initiative Display prints exact current and maximum HP inside the bar. */
+  initiativeDisplayShowHpValue: boolean;
   /** Face of the dice numerals and roll totals. Read with `getDiceLook`. */
   diceFont: DiceFont;
   /** The GM's tracker is a compact list without portraits. Read with `showsCompactInitiative`. */
@@ -146,6 +150,8 @@ export const DEFAULT_SETTINGS: AtlasSettings = {
   initiativeDisplayFont: 'default',
   initiativeDisplayConditionKeyMode: 'dynamic',
   initiativeDisplayConditionKeyPosition: 'top-right',
+  initiativeDisplayShowHpBar: true,
+  initiativeDisplayShowHpValue: true,
   initiativeDock: 'right',
   initiativeBanner: true,
   initiativeMovesOnTurn: false,

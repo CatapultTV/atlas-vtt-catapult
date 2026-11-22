@@ -633,7 +633,11 @@ export class InitiativeDisplayView extends ItemView {
             resource.createDiv({ cls: 'atlas-initiative-display__hp-label', text: 'HP' });
             const track = resource.createDiv({
               cls: 'atlas-initiative-display__resource-track atlas-initiative-display__resource-track--hp',
-              attr: { role: 'meter', 'aria-label': definition.name, 'aria-valuemin': '0', 'aria-valuemax': String(value.max), 'aria-valuenow': String(value.current) },
+              attr: {
+                role: showHpValue ? 'meter' : 'img',
+                'aria-label': definition.name,
+                ...(showHpValue ? { 'aria-valuemin': '0', 'aria-valuemax': String(value.max), 'aria-valuenow': String(value.current) } : {}),
+              },
             });
             const fill = track.createDiv({ cls: 'atlas-initiative-display__resource-fill' });
             fill.style.width = `${value.max > 0 ? Math.max(0, Math.min(100, (value.current / value.max) * 100)) : 0}%`;
