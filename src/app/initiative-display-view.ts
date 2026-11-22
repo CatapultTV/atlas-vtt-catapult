@@ -34,6 +34,11 @@ interface VisibleCombatant {
   playerToken: EntryToken;
 }
 
+interface InitiativeDisplayAnimationSnapshot {
+  badgeRects: Map<string, { left: number; top: number }>;
+  conditionKeyIds: Set<string>;
+}
+
 /**
  * A read-only, standalone initiative screen. It subscribes directly to the selected Atlas view's
  * store, rather than to the DM tracker panel, so hiding that panel never stops this display.
@@ -45,6 +50,7 @@ export class InitiativeDisplayView extends ItemView {
   private stopSettings: (() => void) | null = null;
   private reconnectQueued = false;
   private keyResizeObserver: ResizeObserver | null = null;
+  private startupPending = true;
   private readonly initiativeWindowService = new InitiativeWindowService();
 
   constructor(leaf: WorkspaceLeaf) {
@@ -149,6 +155,9 @@ export class InitiativeDisplayView extends ItemView {
 
   private render(state: ViewAtlasState): void {
     const container = this.contentEl;
+    const previousAnimationState = this.captureAnimationState(container);
+    const playStartup = this.startupPending;
+    this.startupPending = false;
     this.keyResizeObserver?.disconnect();
     this.keyResizeObserver = null;
     container.empty();
@@ -218,6 +227,8 @@ export class InitiativeDisplayView extends ItemView {
       this.renderCombatant(nextPanel, next, definitions, mapShowsNameplates, playersSeeNames, false);
     }
     this.watchConditionKeyLayout(root, conditionKeyPosition);
+    if (playStartup) this.playStartupAnimations(root);
+    else this.playContinuousAnimations(root, previousAnimationState);
   }
 
   /** Shows a compact key for the conditions currently affecting player-visible combatants. */
@@ -252,7 +263,7 @@ export class InitiativeDisplayView extends ItemView {
     });
     key.createDiv({ cls: 'atlas-initiative-display__condition-key-title', text: 'Conditions' });
     const appendItem = (condition: typeof displayConditions[number]): void => {
-      const item = key.createDiv({ cls: 'atlas-initiative-display__condition-key-item' });
+      const item = key.createDiv({ cls: 'atlas-initiative-display__condition-key-item', attr: { 'data-condition-id': condition.id } });
       const symbol = item.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol', attr: { 'aria-hidden': 'true' } });
       symbol.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
       symbol.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
@@ -271,6 +282,162 @@ export class InitiativeDisplayView extends ItemView {
     };
     for (const condition of displayConditions) appendItem(condition);
     // A ResizeObserver recalculates how many rows fit as the popout is resized.
+  }
+
+
+  /** Capture the previous layout before render replaces the DOM, so live updates can use FLIP motion. */
+  private captureAnimationState(container: HTMLElement): InitiativeDisplayAnimationSnapshot {
+    const badgeRects = new Map<string, { left: number; top: number }>();
+    const conditionKeyIds = new Set<string>();
+    container.querySelectorAll<HTMLElement>('[data-animation-key]').forEach((badge) => {
+      const key = badge.dataset.animationKey;
+      if (!key) return;
+      const rect = badge.getBoundingClientRect();
+      badgeRects.set(key, { left: rect.left, top: rect.top });
+    });
+    container.querySelectorAll<HTMLElement>('.atlas-initiative-display__condition-key-item[data-condition-id]').forEach((item) => {
+      const id = item.dataset.conditionId;
+      if (id) conditionKeyIds.add(id);
+    });
+    return { badgeRects, conditionKeyIds };
+  }
+
+  /** Startup is deliberately a single ordered sequence, never replayed by later store updates. */
+  private playStartupAnimations(root: HTMLElement): void {
+    const view = root.ownerDocument.defaultView;
+    if (!view || view.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const round = root.querySelector<HTMLElement>('.atlas-initiative-display__round');
+    const current = root.querySelector<HTMLElement>('.atlas-initiative-display__current .atlas-initiative-display__combatant');
+    const currentBadges = Array.from(root.querySelectorAll<HTMLElement>('.atlas-initiative-display__current [data-animation-key]'))
+      .sort((a, b) => Number(a.dataset.conditionOrder) - Number(b.dataset.conditionOrder));
+    const next = root.querySelector<HTMLElement>('.atlas-initiative-display__next .atlas-initiative-display__combatant');
+    const key = root.querySelector<HTMLElement>('.atlas-initiative-display__condition-key');
+    const hp = root.querySelector<HTMLElement>('.atlas-initiative-display__resource--hp');
+
+    // Match Atlas' "Combat has started" treatment: the heading resolves from a soft blur
+    // while its letter spacing settles. Here it travels from screen centre to its resting top anchor.
+    round?.animate(
+      [
+        { opacity: 0, transform: 'translate(-50%, 42vh)', filter: 'blur(5px)', letterSpacing: '0.22em' },
+        { opacity: 1, transform: 'translate(-50%, 0)', filter: 'blur(0)', letterSpacing: '0.04em' },
+      ],
+      { duration: 900, easing: 'cubic-bezier(0.55, 0.06, 0.68, 0.19)', fill: 'both' },
+    );
+
+    const currentStart = 900;
+    current?.animate(
+      [
+        { opacity: 0, transform: 'scale(0.58) rotate(-9deg)', filter: 'blur(5px)' },
+        { opacity: 1, transform: 'scale(1) rotate(0)', filter: 'blur(0)' },
+      ],
+      { duration: 520, delay: currentStart, easing: 'cubic-bezier(0.3, 1.45, 0.5, 1)', fill: 'both' },
+    );
+
+    const conditionStart = currentStart + 520;
+    const conditionStagger = 105;
+    currentBadges.forEach((badge, index) => {
+      badge.animate(
+        [
+          { opacity: 0, transform: 'translate(-50%, -50%) scale(0.18) rotate(-24deg)', filter: 'blur(3px)' },
+          { opacity: 1, transform: 'translate(-50%, -50%) scale(1) rotate(0)', filter: 'blur(0)' },
+        ],
+        { duration: 420, delay: conditionStart + index * conditionStagger, easing: 'cubic-bezier(0.44, -0.35, 0.31, 1.35)', fill: 'both' },
+      );
+    });
+
+    const conditionsEnd = conditionStart + Math.max(0, currentBadges.length - 1) * conditionStagger + 420;
+    const nextStart = conditionsEnd + 100;
+    next?.animate(
+      [
+        { opacity: 0, transform: 'scale(0.62) rotate(8deg)', filter: 'blur(5px)' },
+        { opacity: 1, transform: 'scale(1) rotate(0)', filter: 'blur(0)' },
+      ],
+      { duration: 500, delay: nextStart, easing: 'cubic-bezier(0.3, 1.45, 0.5, 1)', fill: 'both' },
+    );
+
+    const nextEnd = next ? nextStart + 500 : conditionsEnd;
+    const keyStart = nextEnd + 100;
+    key?.animate(
+      [
+        { opacity: 0, transform: 'scale(0.88) translateY(12px)', filter: 'blur(3px)' },
+        { opacity: 1, transform: 'scale(1) translateY(0)', filter: 'blur(0)' },
+      ],
+      { duration: 420, delay: keyStart, easing: 'cubic-bezier(0.3, 1.35, 0.5, 1)', fill: 'both' },
+    );
+    key?.querySelectorAll<HTMLElement>('.atlas-initiative-display__condition-key-item').forEach((item, index) => {
+      item.animate(
+        [
+          { opacity: 0, transform: 'translateY(7px) scale(0.82)' },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+        ],
+        { duration: 300, delay: keyStart + 70 + index * 45, easing: 'cubic-bezier(0.3, 1.3, 0.5, 1)', fill: 'both' },
+      );
+    });
+
+    const keyItemCount = key?.querySelectorAll('.atlas-initiative-display__condition-key-item').length ?? 0;
+    const keyItemsEnd = 70 + Math.max(0, keyItemCount - 1) * 45 + 300;
+    const keyEnd = keyStart + Math.max(420, keyItemsEnd);
+    hp?.animate(
+      [
+        { opacity: 0, filter: 'blur(3px)' },
+        { opacity: 1, filter: 'blur(0)' },
+      ],
+      { duration: 460, delay: keyEnd + 110, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'both' },
+    );
+  }
+
+  /** Animate only what changed during combat; existing badges glide into their new slots. */
+  private playContinuousAnimations(root: HTMLElement, previous: InitiativeDisplayAnimationSnapshot): void {
+    const view = root.ownerDocument.defaultView;
+    if (!view || view.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    root.querySelectorAll<HTMLElement>('[data-animation-key]').forEach((badge) => {
+      const key = badge.dataset.animationKey;
+      if (!key) return;
+      const oldRect = previous.badgeRects.get(key);
+      const rect = badge.getBoundingClientRect();
+      if (oldRect) {
+        const dx = oldRect.left - rect.left;
+        const dy = oldRect.top - rect.top;
+        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+          badge.animate(
+            [
+              { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px)` },
+              { transform: 'translate(-50%, -50%) translate(0, 0)' },
+            ],
+            { duration: 380, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+          );
+        }
+      } else {
+        badge.animate(
+          [
+            { opacity: 0, transform: 'translate(-50%, -50%) scale(0.2) rotate(-18deg)' },
+            { opacity: 1, transform: 'translate(-50%, -50%) scale(1) rotate(0)' },
+          ],
+          { duration: 420, easing: 'cubic-bezier(0.3, 1.45, 0.5, 1)' },
+        );
+      }
+    });
+
+    root.querySelectorAll<HTMLElement>('.atlas-initiative-display__condition-key-item[data-condition-id]').forEach((item) => {
+      const id = item.dataset.conditionId;
+      if (!id || previous.conditionKeyIds.has(id)) return;
+      const symbol = item.querySelector<HTMLElement>('.atlas-initiative-display__condition-key-symbol');
+      const name = item.querySelector<HTMLElement>('.atlas-initiative-display__condition-key-name');
+      symbol?.animate(
+        [
+          { opacity: 0, transform: 'scale(0.35) rotate(-14deg)' },
+          { opacity: 1, transform: 'scale(1) rotate(0)' },
+        ],
+        { duration: 420, easing: 'cubic-bezier(0.3, 1.45, 0.5, 1)' },
+      );
+      // A left-to-right reveal gives the new label a write-on feel without changing its font.
+      name?.animate(
+        [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }],
+        { duration: 520, easing: 'steps(14, end)' },
+      );
+    });
   }
 
   /** Keep the key in its selected corner while reserving space before the combatant. */
@@ -447,12 +614,14 @@ export class InitiativeDisplayView extends ItemView {
           : isOverflow
             ? 'atlas-initiative-display__condition-badge atlas-initiative-display__condition-badge--overflow'
             : 'atlas-initiative-display__condition-badge',
-        attr: { title: condition.name },
+        attr: { title: condition.name, 'data-animation-key': `${compact ? 'next' : 'current'}:${condition.id}` },
       });
       badge.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
       badge.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
       badge.style.setProperty('--atlas-condition-x', `${50 + Math.cos(angle) * 62}%`);
       badge.style.setProperty('--atlas-condition-y', `${50 + Math.sin(angle) * 62}%`);
+      const clockwiseOrder = (angle - Math.PI + Math.PI * 2) % (Math.PI * 2);
+      badge.dataset.conditionOrder = String(clockwiseOrder);
       if (!compact) {
         const light = isLightBadgeColor(condition.color);
         const glyphColor = light ? '#16161a' : '#fff';
