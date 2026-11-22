@@ -418,6 +418,25 @@
   transform: none;
 }
 
+/* As the popout narrows, switch the key to one column before its entries
+   become cramped. Hide it entirely when the available viewport is tiny. */
+@media (min-width: 621px) and (max-width: 900px) {
+  .atlas-initiative-display__condition-key {
+    width: clamp(160px, 30vw, 240px);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .atlas-initiative-display__condition-key-title {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 480px), (max-height: 360px) {
+  .atlas-initiative-display__condition-key {
+    display: none;
+  }
+}
+
 @media (max-width: 620px) {
   .atlas-initiative-display__condition-key {
     width: clamp(120px, 36vw, 210px);
