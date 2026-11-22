@@ -303,10 +303,9 @@ export class InitiativeDisplayView extends ItemView {
     const style = getComputedStyle(key);
     const padding = (Number.parseFloat(style.paddingTop) || 0) + (Number.parseFloat(style.paddingBottom) || 0);
     const rowGap = Number.parseFloat(style.rowGap) || 0;
-    const itemHeight = Math.max(30, ...items.map((item) => item.getBoundingClientRect().height));
     const titleHeight = title.getBoundingClientRect().height;
     // Use nearly all of the available display height. Do not impose an arbitrary
-    // 70vh ceiling: that caused +n even when a fullscreen popout had ample room.
+    // 70vh ceiling: the key should adapt to split-screen as well as fullscreen.
     let availableHeight = rootRect.height * 0.95;
 
     if (portrait) {
@@ -322,9 +321,23 @@ export class InitiativeDisplayView extends ItemView {
       }
     }
 
-    // Count how many complete rows fit, then reserve one cell for +n only if needed.
-    const rowHeight = itemHeight + rowGap;
-    const maxRows = Math.max(1, Math.floor((Math.max(0, availableHeight - titleHeight - padding) + rowGap) / rowHeight));
+    // First try to fit every condition by scaling the key to the available height.
+    // This applies at every window size, not just when the display is fullscreen.
+    const targetRows = Math.ceil(items.length / 2);
+    const initialItemHeight = Math.max(24, ...items.map((item) => item.getBoundingClientRect().height));
+    const availableForItems = Math.max(0, availableHeight - titleHeight - padding - rowGap * Math.max(0, targetRows - 1));
+    const scale = Math.min(1, Math.max(0.58, availableForItems / (targetRows * initialItemHeight)));
+    key.style.setProperty('--atlas-condition-key-scale', String(scale));
+
+    // Re-measure after scaling, then reserve one cell for +n only if even the
+    // compact layout cannot fit all entries.
+    const itemHeight = Math.max(24, ...items.map((item) => item.getBoundingClientRect().height));
+    const scaledStyle = getComputedStyle(key);
+    const scaledPadding = (Number.parseFloat(scaledStyle.paddingTop) || 0) + (Number.parseFloat(scaledStyle.paddingBottom) || 0);
+    const scaledRowGap = Number.parseFloat(scaledStyle.rowGap) || 0;
+    const scaledTitleHeight = title.getBoundingClientRect().height;
+    const rowHeight = itemHeight + scaledRowGap;
+    const maxRows = Math.max(1, Math.floor((Math.max(0, availableHeight - scaledTitleHeight - scaledPadding) + scaledRowGap) / rowHeight));
     // Use every available two-column cell. Larger displays can fit many more
     // conditions because the key's symbols and labels scale down responsively.
     const maxCells = maxRows * 2;
