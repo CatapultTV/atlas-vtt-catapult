@@ -273,29 +273,18 @@ export class InitiativeDisplayView extends ItemView {
     // A ResizeObserver recalculates how many rows fit as the popout is resized.
   }
 
-  /** Keep the key clear of the current portrait, and replace clipped entries with a +n item. */
-  private watchConditionKeyLayout(root: HTMLElement, position: 'top-right' | 'bottom-right'): void {
-    const update = (): void => {
-      const key = root.querySelector<HTMLElement>('.atlas-initiative-display__condition-key');
-      if (!key) return;
-      key.classList.toggle('atlas-initiative-display__condition-key--bottom', position === 'bottom-right');
-      if (position === 'top-right') {
-        const portrait = root.querySelector<HTMLElement>('.atlas-initiative-display__current .atlas-initiative-display__portrait');
-        if (portrait) {
-          const keyRect = key.getBoundingClientRect();
-          const portraitRect = portrait.getBoundingClientRect();
-          const badgeReach = Math.max(24, portraitRect.width * 0.13);
-          const overlaps = keyRect.left < portraitRect.right + badgeReach
-            && keyRect.right > portraitRect.left - badgeReach
-            && keyRect.top < portraitRect.bottom + badgeReach
-            && keyRect.bottom > portraitRect.top - badgeReach;
-          key.classList.toggle('atlas-initiative-display__condition-key--bottom', overlaps);
-        }
-      }
-      this.fitConditionKey(key);
-    };
-    update();
-    this.keyResizeObserver = new ResizeObserver(update);
+  /** Keep the condition key in the exact position selected in Initiative Display settings. */
+  private watchConditionKeyLayout(root: HTMLElement, position: 'top-left' | 'top-right' | 'bottom-left'): void {
+    const key = root.querySelector<HTMLElement>('.atlas-initiative-display__condition-key');
+    if (!key) return;
+    key.classList.remove(
+      'atlas-initiative-display__condition-key--top-left',
+      'atlas-initiative-display__condition-key--top-right',
+      'atlas-initiative-display__condition-key--bottom-left',
+    );
+    key.classList.add(`atlas-initiative-display__condition-key--${position}`);
+    this.fitConditionKey(key);
+    this.keyResizeObserver = new ResizeObserver(() => this.fitConditionKey(key));
     this.keyResizeObserver.observe(root);
   }
 

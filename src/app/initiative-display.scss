@@ -39,10 +39,7 @@
 .atlas-initiative-display__condition-key {
   position: absolute;
   z-index: 3;
-  top: clamp(0.5rem, 2vh, 1.5rem);
-  right: clamp(0.5rem, 2vw, 1.75rem);
   display: grid;
-  /* The key can move to the bottom-right when its top position collides with the current portrait. */
   width: clamp(220px, 24vw, 380px);
   height: clamp(110px, 30vh, 300px);
   max-height: clamp(110px, 30vh, 300px);
@@ -53,7 +50,7 @@
   align-items: center;
   gap: clamp(0.25rem, 0.65vw, 0.55rem) clamp(0.35rem, 0.8vw, 0.75rem);
   overflow: hidden;
-  padding: clamp(0.45rem, 0.8vw, 0.75rem);
+  padding: 2.2rem clamp(0.45rem, 0.8vw, 0.75rem) clamp(0.45rem, 0.8vw, 0.75rem);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-m);
   background: color-mix(in srgb, var(--background-secondary) 97%, transparent);
@@ -61,13 +58,25 @@
   box-sizing: border-box;
 }
 
-.atlas-initiative-display__condition-key--bottom {
-  top: auto;
+.atlas-initiative-display__condition-key--top-left {
+  top: clamp(0.5rem, 2vh, 1.5rem);
+  left: clamp(0.5rem, 2vw, 1.75rem);
+}
+
+.atlas-initiative-display__condition-key--top-right {
+  top: clamp(0.5rem, 2vh, 1.5rem);
+  right: clamp(0.5rem, 2vw, 1.75rem);
+}
+
+.atlas-initiative-display__condition-key--bottom-left {
   bottom: clamp(0.5rem, 2vh, 1.5rem);
+  left: clamp(0.5rem, 2vw, 1.75rem);
 }
 
 .atlas-initiative-display__condition-key-title {
-  grid-column: 1 / -1;
+  position: absolute;
+  top: 0.55rem;
+  left: 0.75rem;
   color: var(--text-muted);
   font-size: 0.85rem;
   font-weight: 750;
@@ -437,19 +446,7 @@
   transform: none;
 }
 
-/* As the popout narrows, switch the key to one column before its entries
-   become cramped. Hide it entirely when the available viewport is tiny. */
-@media (min-width: 621px) and (max-width: 900px) {
-  .atlas-initiative-display__condition-key {
-    width: clamp(160px, 30vw, 240px);
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .atlas-initiative-display__condition-key-title {
-    grid-column: 1;
-  }
-}
-
+/* Keep the condition key to two columns at every supported width. */
 @media (max-width: 480px), (max-height: 360px) {
   .atlas-initiative-display__condition-key {
     display: none;
@@ -458,11 +455,11 @@
 
 @media (max-width: 620px) {
   .atlas-initiative-display__condition-key {
-    width: clamp(120px, 36vw, 210px);
+    width: clamp(160px, 36vw, 240px);
+    height: clamp(110px, 28vh, 220px);
     max-height: 28vh;
-    grid-template-columns: minmax(0, 1fr);
     gap: 0.3rem;
-    padding: 0.4rem;
+    padding: 2rem 0.4rem 0.4rem;
   }
 
   .atlas-initiative-display__condition-key-symbol {
@@ -473,10 +470,6 @@
 
   .atlas-initiative-display__condition-key-name {
     font-size: clamp(0.65rem, 2.2vw, 0.8rem);
-  }
-
-  .atlas-initiative-display__condition-key-title {
-    grid-column: 1;
   }
 
   .atlas-initiative-display__stage {

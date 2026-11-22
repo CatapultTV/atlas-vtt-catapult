@@ -591,7 +591,8 @@ export class SettingsService {
   }
 
   getInitiativeDisplayConditionKeyPosition(): InitiativeDisplayConditionKeyPosition {
-    return this.settings.initiativeDisplayConditionKeyPosition === 'bottom-right' ? 'bottom-right' : 'top-right';
+    const position = this.settings.initiativeDisplayConditionKeyPosition;
+    return position === 'top-left' || position === 'bottom-left' ? position : 'top-right';
   }
 
   setInitiativeDisplayConditionKeyPosition(position: InitiativeDisplayConditionKeyPosition): void {

@@ -30,7 +30,7 @@ export const TUTORIAL_IDS = ['dashboard', 'map', 'online', 'tableLog', 'assets',
 export type TutorialId = typeof TUTORIAL_IDS[number];
 
 export type InitiativeDisplayConditionKeyMode = 'dynamic' | 'active' | 'complete';
-export type InitiativeDisplayConditionKeyPosition = 'top-right' | 'bottom-right';
+export type InitiativeDisplayConditionKeyPosition = 'top-left' | 'top-right' | 'bottom-left';
 
 export interface AtlasSettings {
   showChangelogOnUpdate: boolean;

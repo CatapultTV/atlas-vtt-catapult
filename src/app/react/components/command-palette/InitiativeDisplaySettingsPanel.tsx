@@ -72,8 +72,9 @@ export function InitiativeDisplaySettingsPanel(): React.ReactElement {
           <SegmentedControl<InitiativeDisplayConditionKeyPosition>
             value={conditionKeyPosition}
             options={[
+              { value: 'top-left', label: t('palette.initiativeDisplayConditionKeyTopLeft') },
               { value: 'top-right', label: t('palette.initiativeDisplayConditionKeyTopRight') },
-              { value: 'bottom-right', label: t('palette.initiativeDisplayConditionKeyBottomRight') },
+              { value: 'bottom-left', label: t('palette.initiativeDisplayConditionKeyBottomLeft') },
             ]}
             ariaLabel={t('palette.initiativeDisplayConditionKeyPosition')}
             onChange={(next) => settings?.setInitiativeDisplayConditionKeyPosition(next)}
