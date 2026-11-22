@@ -323,8 +323,10 @@ export class InitiativeDisplayView extends ItemView {
     // Count how many complete rows fit, then reserve one cell for +n only if needed.
     const rowHeight = itemHeight + rowGap;
     const maxRows = Math.max(1, Math.floor((Math.max(0, availableHeight - titleHeight - padding) + rowGap) / rowHeight));
-    const maxCells = Math.min(maxRows * 2, 12);
-    const overflowNeeded = items.length > Math.min(11, maxCells);
+    // Use every available two-column cell. Larger displays can fit many more
+    // conditions because the key's symbols and labels scale down responsively.
+    const maxCells = maxRows * 2;
+    const overflowNeeded = items.length > maxCells;
     const visibleCount = overflowNeeded ? Math.max(0, maxCells - 1) : items.length;
     const hiddenCount = items.length - visibleCount;
 
