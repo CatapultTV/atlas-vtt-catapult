@@ -276,7 +276,7 @@ export class InitiativeDisplayView extends ItemView {
     const image = entry.imagePath ? portraitSrc(this.app, entry.imagePath) : null;
     if (image) avatar.createEl('img', { attr: { src: image, alt: '', draggable: 'false' } });
     else avatar.createDiv({ cls: 'atlas-initiative-display__portrait-placeholder', text: entry.isNPC ? '♟' : '●' });
-    this.renderConditionBadges(avatar, combatant.playerToken.conditions ?? []);
+    this.renderConditionBadges(avatar, combatant.playerToken.conditions ?? [], !current);
     // Condition badges extend beyond the portrait's lower edge. Reserve the tested
     // responsive space in normal flow so the name and HP row remain clear.
     if ((combatant.playerToken.conditions?.length ?? 0) >= 3) {
@@ -339,7 +339,7 @@ export class InitiativeDisplayView extends ItemView {
   }
 
   /** Draws the same coloured circular glyph badges Atlas places along a token's upper-left ring. */
-  private renderConditionBadges(parent: HTMLElement, conditions: NonNullable<EntryToken['conditions']>): void {
+  private renderConditionBadges(parent: HTMLElement, conditions: NonNullable<EntryToken['conditions']>, compact = false): void {
     if (conditions.length === 0) return;
     const badgeLayer = parent.createDiv({
       cls: 'atlas-initiative-display__condition-ring',
@@ -356,31 +356,35 @@ export class InitiativeDisplayView extends ItemView {
         : -Math.PI / 2 + index * (Math.PI * 2 / shown.length);
       const isOverflow = condition.id === 'overflow';
       const badge = badgeLayer.createDiv({
-        cls: isOverflow
-          ? 'atlas-initiative-display__condition-badge atlas-initiative-display__condition-badge--overflow'
-          : 'atlas-initiative-display__condition-badge',
+        cls: compact
+          ? 'atlas-initiative-display__condition-badge atlas-initiative-display__condition-badge--dot'
+          : isOverflow
+            ? 'atlas-initiative-display__condition-badge atlas-initiative-display__condition-badge--overflow'
+            : 'atlas-initiative-display__condition-badge',
         attr: { title: condition.name },
       });
       badge.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
       badge.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
       badge.style.setProperty('--atlas-condition-x', `${50 + Math.cos(angle) * 62}%`);
       badge.style.setProperty('--atlas-condition-y', `${50 + Math.sin(angle) * 62}%`);
-      const light = isLightBadgeColor(condition.color);
-      const glyphColor = light ? '#16161a' : '#fff';
-      if (condition.glyph.kind === 'icon') {
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 512 512');
-        svg.setAttribute('aria-hidden', 'true');
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', WIDGET_ICON_PATHS[condition.glyph.icon]);
-        path.setAttribute('fill', glyphColor);
-        svg.append(path);
-        badge.append(svg);
-      } else {
-        badge.createSpan({ cls: 'atlas-initiative-display__condition-glyph', text: condition.glyph.text });
-      }
-      if (condition.value !== undefined) {
-        badge.createSpan({ cls: 'atlas-initiative-display__condition-value', text: String(condition.value) });
+      if (!compact) {
+        const light = isLightBadgeColor(condition.color);
+        const glyphColor = light ? '#16161a' : '#fff';
+        if (condition.glyph.kind === 'icon') {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 512 512');
+          svg.setAttribute('aria-hidden', 'true');
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', WIDGET_ICON_PATHS[condition.glyph.icon]);
+          path.setAttribute('fill', glyphColor);
+          svg.append(path);
+          badge.append(svg);
+        } else {
+          badge.createSpan({ cls: 'atlas-initiative-display__condition-glyph', text: condition.glyph.text });
+        }
+        if (condition.value !== undefined) {
+          badge.createSpan({ cls: 'atlas-initiative-display__condition-value', text: String(condition.value) });
+        }
       }
     });
   }

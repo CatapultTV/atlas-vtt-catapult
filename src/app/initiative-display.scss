@@ -354,6 +354,15 @@
   height: 66%;
 }
 
+/* The upcoming combatant uses subtle colour-only markers instead of full badges. */
+.atlas-initiative-display__condition-badge--dot {
+  width: clamp(5px, 4%, 9px);
+  min-width: 5px;
+  border: 0;
+  background: var(--atlas-condition-color, #808080);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 35%);
+}
+
 .atlas-initiative-display__condition-glyph {
   color: var(--atlas-condition-glyph-color, #fff);
   font-size: 1.05em;
