@@ -52,6 +52,7 @@ export class InitiativeDisplayView extends ItemView {
   private reconnectQueued = false;
   private keyResizeObserver: ResizeObserver | null = null;
   private startupPending = true;
+  private combatWasActive = false;
   private readonly initiativeWindowService = new InitiativeWindowService();
 
   constructor(leaf: WorkspaceLeaf) {
@@ -92,6 +93,7 @@ export class InitiativeDisplayView extends ItemView {
   async onClose(): Promise<void> {
     this.disconnect();
     this.startupPending = true;
+    this.combatWasActive = false;
     this.keyResizeObserver?.disconnect();
     this.keyResizeObserver = null;
     this.initiativeWindowService.cleanup();
@@ -158,7 +160,6 @@ export class InitiativeDisplayView extends ItemView {
   private render(state: ViewAtlasState): void {
     const container = this.contentEl;
     const previousAnimationState = this.captureAnimationState(container);
-    const playStartup = this.startupPending;
     this.keyResizeObserver?.disconnect();
     this.keyResizeObserver = null;
     container.empty();
@@ -167,6 +168,7 @@ export class InitiativeDisplayView extends ItemView {
     root.dataset.font = this.sourceView?.serviceManager.getSettingsService().getInitiativeDisplayFont() ?? 'default';
 
     if (!initiative?.isActive) {
+      this.combatWasActive = false;
       root.createDiv({ cls: 'atlas-initiative-display__empty', text: 'No active encounter' });
       return;
     }
@@ -202,6 +204,9 @@ export class InitiativeDisplayView extends ItemView {
       return;
     }
 
+    const playStartup = this.startupPending || !this.combatWasActive;
+    this.startupPending = false;
+    this.combatWasActive = true;
     const current = active[0];
     const lastActiveIndex = Math.max(...active.map((combatant) => visible.findIndex(({ entry }) => entry.id === combatant.entry.id)));
     const next = visible[(lastActiveIndex + 1) % visible.length];
@@ -229,7 +234,6 @@ export class InitiativeDisplayView extends ItemView {
     }
     this.watchConditionKeyLayout(root, conditionKeyPosition);
     if (playStartup) {
-      this.startupPending = false;
       this.playStartupAnimations(root);
     } else this.playContinuousAnimations(root, previousAnimationState);
   }
