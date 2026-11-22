@@ -84,6 +84,8 @@ export class InitiativeDisplayView extends ItemView {
 
   async onClose(): Promise<void> {
     this.disconnect();
+    this.keyResizeObserver?.disconnect();
+    this.keyResizeObserver = null;
     this.initiativeWindowService.cleanup();
     this.contentEl.empty();
   }
@@ -249,17 +251,10 @@ export class InitiativeDisplayView extends ItemView {
       attr: { role: 'group', 'aria-label': mode === 'complete' ? 'Complete condition list' : 'Active condition key' },
     });
     key.createDiv({ cls: 'atlas-initiative-display__condition-key-title', text: 'Conditions' });
-    const items: HTMLElement[] = [];
-    const appendItem = (condition: typeof displayConditions[number], overflow = false): HTMLElement => {
+    const appendItem = (condition: typeof displayConditions[number]): void => {
       const item = key.createDiv({ cls: overflow
         ? 'atlas-initiative-display__condition-key-item atlas-initiative-display__condition-key-overflow'
         : 'atlas-initiative-display__condition-key-item' });
-      if (overflow) {
-        const symbol = item.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol atlas-initiative-display__condition-key-symbol--overflow' });
-        symbol.createSpan({ text: condition.name });
-        item.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: '' });
-        return item;
-      }
       const symbol = item.createDiv({ cls: 'atlas-initiative-display__condition-key-symbol', attr: { 'aria-hidden': 'true' } });
       symbol.style.setProperty('--atlas-condition-color', `#${condition.color.toString(16).padStart(6, '0')}`);
       symbol.style.setProperty('--atlas-condition-glyph-color', isLightBadgeColor(condition.color) ? '#16161a' : '#fff');
@@ -275,12 +270,9 @@ export class InitiativeDisplayView extends ItemView {
         symbol.createSpan({ cls: 'atlas-initiative-display__condition-key-glyph', text: condition.glyph.text });
       }
       item.createDiv({ cls: 'atlas-initiative-display__condition-key-name', text: condition.name });
-      return item;
     };
-    for (const condition of displayConditions) items.push(appendItem(condition));
+    for (const condition of displayConditions) appendItem(condition);
     // A ResizeObserver recalculates how many rows fit as the popout is resized.
-    key.dataset.conditionCount = String(displayConditions.length);
-    key.dataset.conditionItems = 'true';
   }
 
   /** Keep the key clear of the current portrait, and replace clipped entries with a +n item. */
